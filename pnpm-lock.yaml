@@ -5,6 +5,7 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  '@scalar/nuxt@0.6.63': 5c1832e5a700b66225c1e87d78d324815348c9fa3b1bb78499cbdfda570e8bae
   web-worker@1.5.0: aacb3cf03c73282026502be4fe890035f6bfb4446f6d878b7501b41ed06e0513
 
 importers:
@@ -13,7 +14,7 @@ importers:
     dependencies:
       '@scalar/nuxt':
         specifier: ^0.6.63
-        version: 0.6.63(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(supports-color@10.2.2)(tailwindcss@4.3.3)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))(zod@4.4.3)
+        version: 0.6.63(patch_hash=5c1832e5a700b66225c1e87d78d324815348c9fa3b1bb78499cbdfda570e8bae)(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(supports-color@10.2.2)(tailwindcss@4.3.3)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))(zod@4.4.3)
       graphql:
         specifier: ^17.0.2
         version: 17.0.2
@@ -5365,7 +5366,7 @@ snapshots:
       pathe: 2.0.3
       yaml: 2.9.0
 
-  '@scalar/nuxt@0.6.63(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(supports-color@10.2.2)(tailwindcss@4.3.3)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))(zod@4.4.3)':
+  '@scalar/nuxt@0.6.63(patch_hash=5c1832e5a700b66225c1e87d78d324815348c9fa3b1bb78499cbdfda570e8bae)(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(supports-color@10.2.2)(tailwindcss@4.3.3)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))(zod@4.4.3)':
     dependencies:
       '@nuxt/kit': 4.5.2(magic-string@1.2.0)(magicast@0.5.4)(rolldown@1.2.4)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.4)(rollup@4.62.4)(vite@8.2.1(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)))
       '@scalar/api-client': 3.16.1(supports-color@10.2.2)(tailwindcss@4.3.3)
