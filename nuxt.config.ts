@@ -4,6 +4,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@scalar/nuxt'],
   scalar: {
+    url: '/_openapi.json',
     pathRouting: {
       basePath: '/',
     },
@@ -11,6 +12,9 @@ export default defineNuxtConfig({
   nitro: {
     experimental: {
       openAPI: true,
+    },
+    openAPI: {
+      production: 'runtime',
     },
   },
   runtimeConfig: {
