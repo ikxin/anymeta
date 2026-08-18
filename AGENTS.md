@@ -13,7 +13,6 @@
 **GitHub API**
 
 - `https://api.github.com/graphql`
-- `https://api.github.com/repos/{owner}/{repo}/compare/{base}...{head}`
 - `https://api.github.com/repos/{owner}/{repo}/contributors`
 - `https://api.github.com/repos/{owner}/{repo}/languages`
 - `https://api.github.com/repos/{owner}/{repo}/releases`

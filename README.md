@@ -7,7 +7,6 @@ AnyMeta 为 GitHub、npm 等平台的公开元数据提供匿名代理。GitHub 
 当前支持以下只读接口：
 
 - `POST /github/graphql`
-- `GET /github/repos/{owner}/{repo}/compare/{base}...{head}`
 - `GET /github/repos/{owner}/{repo}/contributors`
 - `GET /github/repos/{owner}/{repo}/languages`
 - `GET /github/repos/{owner}/{repo}/releases`
