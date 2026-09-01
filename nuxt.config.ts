@@ -17,7 +17,7 @@ export default defineNuxtConfig({
       production: 'runtime',
       meta: {
         title: 'AnyMeta API',
-        description: 'GitHub、npm 等平台公开元数据的匿名代理接口。',
+        description: 'GitHub、OpenCollective、npm 等平台公开元数据的匿名代理接口。',
         version: '0.1.0',
       },
     },
@@ -25,8 +25,10 @@ export default defineNuxtConfig({
   runtimeConfig: {
     githubAppId: '',
     githubAppPrivateKey: '',
+    openCollectiveToken: '',
   },
   routeRules: {
     '/github/**': { cors: true },
+    '/opencollective/**': { cors: true },
   },
 })

@@ -1,6 +1,6 @@
 # AnyMeta
 
-AnyMeta 为 GitHub、npm 等平台的公开元数据提供匿名代理。GitHub 代理使用 GitHub App 安装令牌，不接收或保存用户个人访问令牌。
+AnyMeta 为 GitHub、OpenCollective、npm 等平台的公开元数据提供匿名代理。GitHub 代理使用 GitHub App 安装令牌，OpenCollective 代理可以使用服务端 Personal Token；两者都不接收或保存调用者的个人访问令牌。
 
 ## GitHub 代理
 
@@ -14,6 +14,43 @@ AnyMeta 为 GitHub、npm 等平台的公开元数据提供匿名代理。GitHub 
 - `GET /github/search/issues`
 
 REST、搜索和 GraphQL 分别维护额度状态。令牌池默认随机预热 5 个安全安装，在额度耗尽时逐步扩容，并在令牌续期时轮换安装来源，避免长期集中消耗少数安装者。安装令牌仅保存在进程内存中。GraphQL 入口只允许查询操作，并限制请求体、查询深度、字段数量、片段嵌套和分页数量。
+
+## OpenCollective 代理
+
+当前提供以下接口：
+
+- `POST /opencollective/graphql/v2/`
+
+该接口兼容 OpenCollective GraphQL v2 的请求体，但只开放获取赞助者所需的公开字段：`collective`、`members`、成员账号、赞助层级和金额。接口拒绝 mutation、subscription、`me`、邮箱、付款资料以及白名单以外的字段，并限制请求体、查询深度、字段数量、片段嵌套、分页偏移和图片尺寸。
+
+OpenCollective 官方允许未鉴权调用，每分钟最多 10 次；配置 Personal Token 后，每分钟额度提升到 100 次。AnyMeta 未配置 token 时会自动使用匿名额度，不会因此禁用接口。服务只会把 token 放在发往 OpenCollective 的 `Personal-Token` 请求头中，不会转发调用者提供的 Cookie 或认证头。
+
+请求示例：
+
+```bash
+curl http://localhost:3000/opencollective/graphql/v2/ \
+  --request POST \
+  --header 'Content-Type: application/json' \
+  --data '{"query":"query Members($slug: String!) { collective(slug: $slug) { members(limit: 100, role: [BACKER]) { totalCount nodes { account { name slug website imageUrl } tier { name amount { value currency } } } } } }","variables":{"slug":"nuxtjs"}}'
+```
+
+### 创建 OpenCollective Personal Token
+
+公开查询不需要任何 OAuth scope。为降低共享代理的风险，建议使用一个不管理任何 Collective、组织或财务资料的专用个人账号创建 token，并按以下步骤操作：
+
+1. 登录 [OpenCollective](https://opencollective.com/)，进入个人账号工作区。
+2. 打开 `Settings` 下的 `For developers`。
+3. 点击 `Create Personal Token`。
+4. 名称可以填写 `AnyMeta`；不要选择任何 scope，也不要启用 `Advanced privileges`。
+5. 建议设置到期时间，创建后立即复制 token，并保存到部署平台的服务端环境变量：
+
+```dotenv
+NUXT_OPEN_COLLECTIVE_TOKEN=你的_PERSONAL_TOKEN
+```
+
+不要使用 `NUXT_PUBLIC_` 前缀，也不要把真实 token 写入仓库。token 失效或填写错误时，上游会返回 `401`；删除该环境变量即可暂时退回匿名额度。
+
+官方参考：[API 访问与额度](https://developers.opencollective.com/access)、[创建 Personal Token](https://documentation.opencollective.com/development/personal-tokens)。
 
 ## 创建 GitHub App
 
@@ -49,17 +86,19 @@ GitHub 固有的 `Metadata: Read-only` 无法关闭，保留即可。不要额�
 
 ## 环境变量
 
-复制 `.env.example` 为本地 `.env`，填写下面两个变量：
+复制 `.env.example` 为本地 `.env`。GitHub 代理需要填写前两个变量；OpenCollective Personal Token 可选：
 
 ```dotenv
 NUXT_GITHUB_APP_ID=123456
 NUXT_GITHUB_APP_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----\n完整私钥内容\n-----END RSA PRIVATE KEY-----"
+NUXT_OPEN_COLLECTIVE_TOKEN=
 ```
 
 | 变量 | 值的来源 |
 | --- | --- |
 | `NUXT_GITHUB_APP_ID` | GitHub App 设置页中的数字 `App ID` |
 | `NUXT_GITHUB_APP_PRIVATE_KEY` | 下载的 `.pem` 文件的完整内容，包括开头和结尾标记 |
+| `NUXT_OPEN_COLLECTIVE_TOKEN` | OpenCollective 个人工作区 `For developers` 中创建的 Personal Token；可留空 |
 
 本地 `.env` 中可以把私钥写成一行，并用 `\n` 表示换行。Vercel、Netlify 等托管平台通常可以直接粘贴 `.pem` 文件的原始多行内容；代码同时支持这两种格式。
 
