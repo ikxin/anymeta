@@ -41,7 +41,7 @@ export async function proxyOpenCollectiveGraphql(event: H3Event, body: string) {
   } catch (error) {
     throw createError({
       statusCode: 502,
-      message: '无法连接 OpenCollective 上游接口。',
+      message: 'Unable to connect to the OpenCollective upstream API.',
       cause: error,
     })
   }

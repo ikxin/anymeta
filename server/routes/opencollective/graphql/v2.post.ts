@@ -9,11 +9,11 @@ defineRouteMeta({
   openAPI: {
     operationId: 'openCollectiveGraphql',
     tags: ['OpenCollective GraphQL'],
-    summary: '查询 OpenCollective 公开赞助元数据',
-    description: '使用服务端 Personal Token 查询公开的 Collective、成员、赞助层级和金额元数据。只允许白名单内的 query 字段，不允许 mutation、身份数据或付款数据。未配置 Personal Token 时使用 OpenCollective 匿名额度。',
+    summary: 'Query public OpenCollective sponsorship metadata',
+    description: 'Queries public Collective, member, tier, and amount metadata with a server-side Personal Token. Only allowlisted query fields are available; mutations, identity data, and payment data are rejected. When no Personal Token is configured, the OpenCollective anonymous allowance is used.',
     externalDocs: {
-      description: 'OpenCollective GraphQL API 文档',
-      url: 'https://developers.opencollective.com/',
+      description: 'OpenCollective GraphQL API documentation',
+      url: 'https://developers.opencollective.com/access',
     },
     security: [],
     requestBody: {
@@ -27,7 +27,7 @@ defineRouteMeta({
             properties: {
               query: {
                 type: 'string',
-                description: '只允许查询公开的 collective、members、tier、account 和金额字段。',
+                description: 'Only public collective, members, tier, account, and amount fields can be queried.',
               },
               operationName: {
                 type: ['string', 'null'],
@@ -49,7 +49,7 @@ defineRouteMeta({
     },
     responses: {
       200: {
-        description: 'OpenCollective GraphQL 响应。',
+        description: 'OpenCollective GraphQL response.',
         content: {
           'application/json': {
             schema: {
@@ -73,7 +73,7 @@ defineRouteMeta({
         },
       },
       400: {
-        description: '请求体或 GraphQL 查询不符合匿名代理限制。',
+        description: 'The request body or GraphQL query violates the anonymous proxy limits.',
         content: {
           'application/json': {
             schema: {
@@ -83,7 +83,7 @@ defineRouteMeta({
         },
       },
       default: {
-        description: 'OpenCollective 上游或 AnyMeta 返回的错误。',
+        description: 'OpenCollective or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: {
@@ -98,7 +98,7 @@ defineRouteMeta({
         schemas: {
           OpenCollectiveProxyError: {
             type: 'object',
-            description: 'OpenCollective 上游错误或 AnyMeta 代理错误。',
+            description: 'An OpenCollective upstream error or an AnyMeta proxy error.',
             additionalProperties: true,
             properties: {
               message: {

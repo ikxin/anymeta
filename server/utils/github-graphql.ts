@@ -30,34 +30,34 @@ export class GithubGraphqlValidationError extends Error {
 
 export function validateGithubGraphqlBody(rawBody: string | undefined) {
   if (!rawBody) {
-    throw new GithubGraphqlValidationError('GraphQL 请求体不能为空。')
+    throw new GithubGraphqlValidationError('The GraphQL request body cannot be empty.')
   }
   if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
-    throw new GithubGraphqlValidationError('GraphQL 请求体不能超过 64 KiB。')
+    throw new GithubGraphqlValidationError('The GraphQL request body cannot exceed 64 KiB.')
   }
 
   let payload: unknown
   try {
     payload = JSON.parse(rawBody)
   } catch {
-    throw new GithubGraphqlValidationError('GraphQL 请求体必须是有效的 JSON。')
+    throw new GithubGraphqlValidationError('The GraphQL request body must be valid JSON.')
   }
   if (!isRecord(payload) || typeof payload.query !== 'string' || !payload.query.trim()) {
-    throw new GithubGraphqlValidationError('GraphQL 请求体必须包含非空的 query 字段。')
+    throw new GithubGraphqlValidationError('The GraphQL request body must contain a non-empty query field.')
   }
   if (
     payload.operationName !== undefined &&
     payload.operationName !== null &&
     typeof payload.operationName !== 'string'
   ) {
-    throw new GithubGraphqlValidationError('operationName 必须是字符串。')
+    throw new GithubGraphqlValidationError('operationName must be a string.')
   }
   if (
     payload.variables !== undefined &&
     payload.variables !== null &&
     !isRecord(payload.variables)
   ) {
-    throw new GithubGraphqlValidationError('variables 必须是 JSON 对象。')
+    throw new GithubGraphqlValidationError('variables must be a JSON object.')
   }
 
   inspectDocument(payload as unknown as GithubGraphqlPayload)
@@ -69,12 +69,12 @@ function inspectDocument(payload: GithubGraphqlPayload) {
   try {
     document = parse(payload.query)
   } catch (error) {
-    const message = error instanceof Error ? error.message : '无法解析查询。'
-    throw new GithubGraphqlValidationError(`GraphQL 语法错误：${message}`)
+    const message = error instanceof Error ? error.message : 'Unable to parse the query.'
+    throw new GithubGraphqlValidationError(`GraphQL syntax error: ${message}`)
   }
   if (document.definitions.length > MAX_DEFINITION_COUNT) {
     throw new GithubGraphqlValidationError(
-      `GraphQL 定义数量不能超过 ${MAX_DEFINITION_COUNT}。`,
+      `The GraphQL document cannot contain more than ${MAX_DEFINITION_COUNT} definitions.`,
     )
   }
 
@@ -83,23 +83,23 @@ function inspectDocument(payload: GithubGraphqlPayload) {
   for (const definition of document.definitions) {
     if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (definition.operation !== 'query') {
-        throw new GithubGraphqlValidationError('匿名代理只允许 GraphQL 查询，不允许变更或订阅。')
+        throw new GithubGraphqlValidationError('The anonymous proxy allows GraphQL queries only; mutations and subscriptions are not allowed.')
       }
       operations.push(definition)
       continue
     }
     if (definition.kind === Kind.FRAGMENT_DEFINITION) {
       if (fragments.has(definition.name.value)) {
-        throw new GithubGraphqlValidationError(`片段 ${definition.name.value} 重复定义。`)
+        throw new GithubGraphqlValidationError(`Fragment ${definition.name.value} is defined more than once.`)
       }
       fragments.set(definition.name.value, definition)
       continue
     }
-    throw new GithubGraphqlValidationError('请求中包含非可执行的 GraphQL 定义。')
+    throw new GithubGraphqlValidationError('The request contains a non-executable GraphQL definition.')
   }
 
   if (operations.length === 0) {
-    throw new GithubGraphqlValidationError('GraphQL 请求必须包含查询操作。')
+    throw new GithubGraphqlValidationError('The GraphQL request must contain a query operation.')
   }
 
   const operation = selectOperation(operations, payload.operationName)
@@ -117,12 +117,12 @@ function inspectDocument(payload: GithubGraphqlPayload) {
 
   if (stats.fields > MAX_FIELD_COUNT) {
     throw new GithubGraphqlValidationError(
-      `GraphQL 查询字段数量不能超过 ${MAX_FIELD_COUNT}。`,
+      `The GraphQL query cannot contain more than ${MAX_FIELD_COUNT} fields.`,
     )
   }
   if (stats.maxDepth > MAX_QUERY_DEPTH) {
     throw new GithubGraphqlValidationError(
-      `GraphQL 查询深度不能超过 ${MAX_QUERY_DEPTH}。`,
+      `The GraphQL query depth cannot exceed ${MAX_QUERY_DEPTH}.`,
     )
   }
 }
@@ -134,12 +134,12 @@ function selectOperation(
   if (operationName) {
     const selected = operations.find(operation => operation.name?.value === operationName)
     if (!selected) {
-      throw new GithubGraphqlValidationError(`找不到名为 ${operationName} 的 GraphQL 查询。`)
+      throw new GithubGraphqlValidationError(`No GraphQL query named ${operationName} was found.`)
     }
     return selected
   }
   if (operations.length !== 1) {
-    throw new GithubGraphqlValidationError('包含多个查询时必须提供 operationName。')
+    throw new GithubGraphqlValidationError('operationName is required when multiple queries are provided.')
   }
   return operations[0]!
 }
@@ -170,12 +170,12 @@ function inspectSelectionSet(
       stats.maxDepth = Math.max(stats.maxDepth, fieldDepth)
       if (stats.fields > MAX_FIELD_COUNT) {
         throw new GithubGraphqlValidationError(
-          `GraphQL 查询字段数量不能超过 ${MAX_FIELD_COUNT}。`,
+          `The GraphQL query cannot contain more than ${MAX_FIELD_COUNT} fields.`,
         )
       }
       if (fieldDepth > MAX_QUERY_DEPTH) {
         throw new GithubGraphqlValidationError(
-          `GraphQL 查询深度不能超过 ${MAX_QUERY_DEPTH}。`,
+          `The GraphQL query depth cannot exceed ${MAX_QUERY_DEPTH}.`,
         )
       }
       inspectPaginationArguments(selection.arguments || [], variables, defaults)
@@ -209,14 +209,14 @@ function inspectSelectionSet(
     const fragmentName = selection.name.value
     const fragment = fragments.get(fragmentName)
     if (!fragment) {
-      throw new GithubGraphqlValidationError(`找不到片段 ${fragmentName}。`)
+      throw new GithubGraphqlValidationError(`Fragment ${fragmentName} was not found.`)
     }
     if (activeFragments.has(fragmentName)) {
-      throw new GithubGraphqlValidationError(`片段 ${fragmentName} 存在循环引用。`)
+      throw new GithubGraphqlValidationError(`Fragment ${fragmentName} contains a cyclic reference.`)
     }
     if (activeFragments.size >= MAX_FRAGMENT_HOPS) {
       throw new GithubGraphqlValidationError(
-        `GraphQL 片段嵌套不能超过 ${MAX_FRAGMENT_HOPS} 层。`,
+        `GraphQL fragment nesting cannot exceed ${MAX_FRAGMENT_HOPS} levels.`,
       )
     }
 
@@ -246,7 +246,7 @@ function inspectPaginationArguments(
     const value = resolveInteger(argument.value, variables, defaults)
     if (value !== undefined && (!Number.isInteger(value) || value < 1 || value > MAX_PAGE_SIZE)) {
       throw new GithubGraphqlValidationError(
-        `${argument.name.value} 必须是 1 到 ${MAX_PAGE_SIZE} 之间的整数。`,
+        `${argument.name.value} must be an integer between 1 and ${MAX_PAGE_SIZE}.`,
       )
     }
   }
@@ -268,7 +268,7 @@ function resolveInteger(
   if (Object.hasOwn(variables, name)) {
     const variable = variables[name]
     if (typeof variable !== 'number') {
-      throw new GithubGraphqlValidationError(`变量 ${name} 必须是整数。`)
+      throw new GithubGraphqlValidationError(`Variable ${name} must be an integer.`)
     }
     return variable
   }

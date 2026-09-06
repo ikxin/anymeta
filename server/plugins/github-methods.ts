@@ -4,7 +4,7 @@ const graphqlMethodNotAllowed = defineEventHandler(event => {
   setResponseHeader(event, 'Allow', 'POST, OPTIONS')
   throw createError({
     statusCode: 405,
-    message: 'GraphQL 接口只接受 POST 请求。',
+    message: 'The GraphQL endpoint accepts POST requests only.',
   })
 })
 

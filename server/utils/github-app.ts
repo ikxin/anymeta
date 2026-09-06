@@ -129,12 +129,12 @@ export class GithubAppTokenPool {
 
     if (!/^\d+$/.test(this.appId)) {
       throw new GithubTokenPoolError(
-        '缺少有效的 NUXT_GITHUB_APP_ID；这里必须填写 GitHub App 的数字编号，而不是客户端编号。',
+        'A valid NUXT_GITHUB_APP_ID is required; use the numeric GitHub App ID, not the client ID.',
       )
     }
     if (!this.privateKey.includes('BEGIN') || !this.privateKey.includes('PRIVATE KEY')) {
       throw new GithubTokenPoolError(
-        '缺少有效的 NUXT_GITHUB_APP_PRIVATE_KEY；这里必须填写 GitHub 下载的 PEM 私钥内容。',
+        'A valid NUXT_GITHUB_APP_PRIVATE_KEY is required; use the PEM private key downloaded from GitHub.',
       )
     }
   }
@@ -150,7 +150,7 @@ export class GithubAppTokenPool {
     const now = Date.now()
     if (this.globalCooldownUntil > now) {
       const retryAfter = Math.max(1, Math.ceil((this.globalCooldownUntil - now) / 1000))
-      throw new GithubTokenPoolError('GitHub 次级限流冷却中，请稍后重试。', 429, retryAfter)
+      throw new GithubTokenPoolError('GitHub secondary rate limiting is in effect; try again later.', 429, retryAfter)
     }
 
     await this.ensureReady()
@@ -167,7 +167,7 @@ export class GithubAppTokenPool {
         ? Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
         : 60
       throw new GithubTokenPoolError(
-        '当前没有可用的 GitHub App 安装令牌，请等待额度重置或安装新的应用实例。',
+        'No GitHub App installation access token is currently available; wait for the rate limit to reset or install another app instance.',
         429,
         retryAfter,
       )
@@ -254,7 +254,7 @@ export class GithubAppTokenPool {
         const replacements = await this.activateInstallations(expiring.length, expiringIds)
         replacementCount = Math.min(replacements.length, expiring.length)
       } catch {
-        // 续期原令牌仍可用时，替补安装生成失败不应中断服务。
+        // If the current token is still valid, a failed replacement installation must not interrupt the service.
       }
     }
 
@@ -276,7 +276,7 @@ export class GithubAppTokenPool {
 
     if (![...this.installations.values()].some(installation => this.hasUsableToken(installation))) {
       throw new GithubTokenPoolError(
-        'GitHub App 没有可用安装。请保持仅元数据权限，并且只选择一个公开仓库。',
+        'The GitHub App has no available installations. Keep only the metadata permission and select exactly one public repository.',
       )
     }
   }
@@ -310,19 +310,19 @@ export class GithubAppTokenPool {
         { headers: createAppHeaders(jwt) },
       )
       if (!response.ok) {
-        throw await createGithubApiError(response, '无法读取 GitHub App 安装列表')
+        throw await createGithubApiError(response, 'Unable to read the GitHub App installation list')
       }
 
       const installations = (await response.json()) as GithubInstallation[]
       if (!Array.isArray(installations)) {
-        throw new GithubTokenPoolError('GitHub 返回了无法识别的应用安装列表。', 502)
+        throw new GithubTokenPoolError('GitHub returned an unrecognized app installation list.', 502)
       }
       discovered.push(...installations)
       if (installations.length < INSTALLATIONS_PER_PAGE) {
         break
       }
       if (page === MAX_INSTALLATION_PAGES) {
-        throw new GithubTokenPoolError('GitHub App 安装数量超过当前服务的安全读取上限。', 503)
+        throw new GithubTokenPoolError('The number of GitHub App installations exceeds the safe read limit for this service.', 503)
       }
     }
 
@@ -349,7 +349,7 @@ export class GithubAppTokenPool {
     this.lastInstallationDiscovery = Date.now()
     if (this.installations.size === 0) {
       throw new GithubTokenPoolError(
-        '没有发现安全的 GitHub App 安装。请保持所有可配置权限为“无访问权限”，并且只选择一个公开仓库。',
+        'No safe GitHub App installation was found. Set every configurable permission to "No access" and select exactly one public repository.',
       )
     }
   }
@@ -380,7 +380,7 @@ export class GithubAppTokenPool {
       if (firstFailure instanceof GithubTokenPoolError) {
         throw firstFailure
       }
-      throw new GithubTokenPoolError('无法生成任何 GitHub App 安装令牌。', 503)
+      throw new GithubTokenPoolError('Unable to generate a GitHub App installation access token.', 503)
     }
     return candidates
       .filter((_, index) => results[index]?.status === 'fulfilled')
@@ -416,13 +416,13 @@ export class GithubAppTokenPool {
     if (!bootstrapResponse.ok) {
       throw await createGithubApiError(
         bootstrapResponse,
-        `无法为安装 ${installation.id} 生成校验令牌`,
+        `Unable to generate a verification token for installation ${installation.id}`,
       )
     }
 
     const bootstrap = (await bootstrapResponse.json()) as GithubInstallationTokenResponse
     if (!bootstrap.token) {
-      throw new GithubTokenPoolError(`安装 ${installation.id} 返回了格式无效的校验令牌。`, 502)
+      throw new GithubTokenPoolError(`Installation ${installation.id} returned a verification token with an invalid format.`, 502)
     }
 
     let unacceptedToken: string | undefined
@@ -433,7 +433,7 @@ export class GithubAppTokenPool {
       )
       if (!publicRepository) {
         throw new GithubTokenPoolError(
-          `安装 ${installation.id} 必须只选择一个公开仓库。`,
+          `Installation ${installation.id} must select exactly one public repository.`,
           503,
         )
       }
@@ -453,14 +453,14 @@ export class GithubAppTokenPool {
         },
       )
       if (!response.ok) {
-        throw await createGithubApiError(response, `无法为安装 ${installation.id} 生成令牌`)
+        throw await createGithubApiError(response, `Unable to generate a token for installation ${installation.id}`)
       }
 
       const result = (await response.json()) as GithubInstallationTokenResponse
       unacceptedToken = result.token
       if (!result.token || !result.expires_at) {
         throw new GithubTokenPoolError(
-          `安装 ${installation.id} 返回了格式无效的安装令牌。`,
+          `Installation ${installation.id} returned an installation access token with an invalid format.`,
           502,
         )
       }
@@ -468,14 +468,14 @@ export class GithubAppTokenPool {
       const scopedRepository = await getSinglePublicRepository(result.token, installation.id)
       if (scopedRepository?.id !== publicRepository.id) {
         throw new GithubTokenPoolError(
-          `安装 ${installation.id} 返回了范围或权限不安全的令牌，已拒绝加入令牌池。`,
+          `Installation ${installation.id} returned a token with an unsafe scope or permission set; it was rejected from the token pool.`,
           503,
         )
       }
 
       const expiresAt = Date.parse(result.expires_at)
       if (!Number.isFinite(expiresAt)) {
-        throw new GithubTokenPoolError(`安装 ${installation.id} 返回了无效的令牌过期时间。`, 502)
+        throw new GithubTokenPoolError(`Installation ${installation.id} returned an invalid token expiration time.`, 502)
       }
 
       installation.token = result.token
@@ -651,7 +651,7 @@ async function fetchGithubAuth(url: string, init: RequestInit = {}) {
   try {
     return await fetch(url, { ...init, signal: controller.signal })
   } catch {
-    throw new GithubTokenPoolError('无法连接 GitHub 应用认证接口。', 503)
+    throw new GithubTokenPoolError('Unable to connect to the GitHub App authentication API.', 503)
   } finally {
     clearTimeout(timeout)
   }
@@ -665,7 +665,7 @@ async function revokeInstallationToken(token: string) {
     })
     await response.body?.cancel()
   } catch {
-    // 校验令牌即使撤销失败也会在一小时内自动过期，且不会进入共享池。
+    // A verification token expires automatically within one hour even if revocation fails, and it is never added to the shared pool.
   }
 }
 
@@ -677,7 +677,7 @@ async function getSinglePublicRepository(token: string, installationId: number) 
   if (!response.ok) {
     throw await createGithubApiError(
       response,
-      `无法校验安装 ${installationId} 的仓库范围`,
+      `Unable to verify the repository scope for installation ${installationId}`,
     )
   }
 
@@ -686,7 +686,7 @@ async function getSinglePublicRepository(token: string, installationId: number) 
     result = (await response.json()) as GithubInstallationRepositoriesResponse
   } catch {
     throw new GithubTokenPoolError(
-      `安装 ${installationId} 返回了无法识别的仓库列表。`,
+      `Installation ${installationId} returned an unrecognized repository list.`,
       502,
     )
   }
@@ -735,12 +735,12 @@ async function createGithubApiError(response: Response, prefix: string) {
   try {
     const body = (await response.json()) as { message?: string }
     if (body.message) {
-      detail = `：${body.message}`
+      detail = `: ${body.message}`
     }
   } catch {
-    // GitHub 的非 JSON 错误响应没有可安全展示的详细信息。
+    // GitHub's non-JSON error response contains no details that can be safely displayed.
   }
-  return new GithubTokenPoolError(`${prefix}（${response.status}）${detail}`, 503)
+  return new GithubTokenPoolError(`${prefix} (${response.status})${detail}`, 503)
 }
 
 function normalizePrivateKey(value: string) {
@@ -777,7 +777,7 @@ async function createAppJwt(appId: string, privateKey: string) {
     return `${header}.${payload}.${base64UrlEncode(new Uint8Array(signature))}`
   } catch {
     throw new GithubTokenPoolError(
-      '无法使用 NUXT_GITHUB_APP_PRIVATE_KEY 签发 JWT，请检查 PEM 私钥是否完整。',
+      'Unable to sign a JWT with NUXT_GITHUB_APP_PRIVATE_KEY; check that the PEM private key is complete.',
       503,
     )
   }

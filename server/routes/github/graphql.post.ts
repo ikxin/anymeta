@@ -9,10 +9,10 @@ defineRouteMeta({
   openAPI: {
     operationId: 'githubGraphql',
     tags: ['GitHub GraphQL'],
-    summary: '执行 GitHub GraphQL 查询',
-    description: '使用共享 GitHub App 安装令牌执行只读 GraphQL 查询。',
+    summary: 'Run a GitHub GraphQL query',
+    description: 'Runs a read-only GraphQL query with a shared GitHub App installation access token.',
     externalDocs: {
-      description: 'GitHub GraphQL API 文档',
+      description: 'GitHub GraphQL API documentation',
       url: 'https://docs.github.com/graphql',
     },
     security: [],
@@ -27,7 +27,7 @@ defineRouteMeta({
             properties: {
               query: {
                 type: 'string',
-                description: '只允许 query 操作，不允许 mutation 或 subscription。',
+                description: 'Only query operations are allowed; mutations and subscriptions are rejected.',
               },
               operationName: {
                 type: ['string', 'null'],
@@ -43,7 +43,7 @@ defineRouteMeta({
     },
     responses: {
       200: {
-        description: 'GitHub GraphQL 响应。',
+        description: 'GitHub GraphQL response.',
         content: {
           'application/json': {
             schema: {
@@ -67,7 +67,7 @@ defineRouteMeta({
         },
       },
       400: {
-        description: '请求体或 GraphQL 查询不符合匿名代理限制。',
+        description: 'The request body or GraphQL query violates the anonymous proxy limits.',
         content: {
           'application/json': {
             schema: {
@@ -77,7 +77,7 @@ defineRouteMeta({
         },
       },
       default: {
-        description: 'GitHub 上游或 AnyMeta 返回的错误。',
+        description: 'GitHub or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: {
@@ -94,7 +94,7 @@ defineRouteMeta({
             name: 'owner',
             in: 'path',
             required: true,
-            description: '仓库所有者账号名，不区分大小写。',
+            description: 'The repository owner login. The value is case-insensitive.',
             schema: {
               type: 'string',
             },
@@ -104,7 +104,7 @@ defineRouteMeta({
             name: 'repo',
             in: 'path',
             required: true,
-            description: '不带 .git 后缀的仓库名称，不区分大小写。',
+            description: 'The repository name without the .git suffix. The value is case-insensitive.',
             schema: {
               type: 'string',
             },
@@ -113,7 +113,7 @@ defineRouteMeta({
           GithubPage: {
             name: 'page',
             in: 'query',
-            description: '要读取的结果页码。',
+            description: 'The page number to fetch.',
             schema: {
               type: 'integer',
               minimum: 1,
@@ -123,7 +123,7 @@ defineRouteMeta({
           GithubPerPage: {
             name: 'per_page',
             in: 'query',
-            description: '每页返回的结果数量。',
+            description: 'The number of results to return per page.',
             schema: {
               type: 'integer',
               minimum: 1,
@@ -134,7 +134,7 @@ defineRouteMeta({
           IfNoneMatch: {
             name: 'If-None-Match',
             in: 'header',
-            description: '用于条件请求的 ETag。',
+            description: 'An ETag for conditional requests.',
             schema: {
               type: 'string',
             },
@@ -142,7 +142,7 @@ defineRouteMeta({
           IfModifiedSince: {
             name: 'If-Modified-Since',
             in: 'header',
-            description: '用于条件请求的 HTTP 日期。',
+            description: 'An HTTP date for conditional requests.',
             schema: {
               type: 'string',
             },
@@ -151,7 +151,7 @@ defineRouteMeta({
         schemas: {
           GithubProxyError: {
             type: 'object',
-            description: 'GitHub 上游错误或 AnyMeta 代理错误。',
+            description: 'A GitHub upstream error or an AnyMeta proxy error.',
             additionalProperties: true,
             properties: {
               message: {

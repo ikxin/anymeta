@@ -17,7 +17,7 @@ export default defineNuxtConfig({
       production: 'runtime',
       meta: {
         title: 'AnyMeta API',
-        description: 'GitHub、OpenCollective、npm 等平台公开元数据的匿名代理接口。',
+        description: 'An anonymous proxy for public metadata from GitHub, OpenCollective, npm, and other platforms.',
         version: '0.1.0',
       },
     },

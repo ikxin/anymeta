@@ -17,7 +17,11 @@ const MAX_PAGE_SIZE = 100
 const MAX_OFFSET = 10_000
 const MAX_IMAGE_SIZE = 1_024
 
-type FieldPolicy = true | Readonly<Record<string, FieldPolicy>>
+interface FieldPolicyMap {
+  readonly [fieldName: string]: true | FieldPolicyMap
+}
+
+type FieldPolicy = true | FieldPolicyMap
 
 const amountFields = {
   value: true,
@@ -87,34 +91,34 @@ export class OpenCollectiveGraphqlValidationError extends Error {
 
 export function validateOpenCollectiveGraphqlBody(rawBody: string | undefined) {
   if (!rawBody) {
-    throw new OpenCollectiveGraphqlValidationError('GraphQL 请求体不能为空。')
+    throw new OpenCollectiveGraphqlValidationError('The GraphQL request body cannot be empty.')
   }
   if (new TextEncoder().encode(rawBody).byteLength > MAX_BODY_BYTES) {
-    throw new OpenCollectiveGraphqlValidationError('GraphQL 请求体不能超过 64 KiB。')
+    throw new OpenCollectiveGraphqlValidationError('The GraphQL request body cannot exceed 64 KiB.')
   }
 
   let payload: unknown
   try {
     payload = JSON.parse(rawBody)
   } catch {
-    throw new OpenCollectiveGraphqlValidationError('GraphQL 请求体必须是有效的 JSON。')
+    throw new OpenCollectiveGraphqlValidationError('The GraphQL request body must be valid JSON.')
   }
   if (!isRecord(payload) || typeof payload.query !== 'string' || !payload.query.trim()) {
-    throw new OpenCollectiveGraphqlValidationError('GraphQL 请求体必须包含非空的 query 字段。')
+    throw new OpenCollectiveGraphqlValidationError('The GraphQL request body must contain a non-empty query field.')
   }
   if (
     payload.operationName !== undefined &&
     payload.operationName !== null &&
     typeof payload.operationName !== 'string'
   ) {
-    throw new OpenCollectiveGraphqlValidationError('operationName 必须是字符串。')
+    throw new OpenCollectiveGraphqlValidationError('operationName must be a string.')
   }
   if (
     payload.variables !== undefined &&
     payload.variables !== null &&
     !isRecord(payload.variables)
   ) {
-    throw new OpenCollectiveGraphqlValidationError('variables 必须是 JSON 对象。')
+    throw new OpenCollectiveGraphqlValidationError('variables must be a JSON object.')
   }
 
   inspectDocument(payload as unknown as OpenCollectiveGraphqlPayload)
@@ -126,12 +130,12 @@ function inspectDocument(payload: OpenCollectiveGraphqlPayload) {
   try {
     document = parse(payload.query)
   } catch (error) {
-    const message = error instanceof Error ? error.message : '无法解析查询。'
-    throw new OpenCollectiveGraphqlValidationError(`GraphQL 语法错误：${message}`)
+    const message = error instanceof Error ? error.message : 'Unable to parse the query.'
+    throw new OpenCollectiveGraphqlValidationError(`GraphQL syntax error: ${message}`)
   }
   if (document.definitions.length > MAX_DEFINITION_COUNT) {
     throw new OpenCollectiveGraphqlValidationError(
-      `GraphQL 定义数量不能超过 ${MAX_DEFINITION_COUNT}。`,
+      `The GraphQL document cannot contain more than ${MAX_DEFINITION_COUNT} definitions.`,
     )
   }
 
@@ -141,7 +145,7 @@ function inspectDocument(payload: OpenCollectiveGraphqlPayload) {
     if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (definition.operation !== 'query') {
         throw new OpenCollectiveGraphqlValidationError(
-          '匿名代理只允许 GraphQL 查询，不允许变更或订阅。',
+          'The anonymous proxy allows GraphQL queries only; mutations and subscriptions are not allowed.',
         )
       }
       operations.push(definition)
@@ -150,17 +154,17 @@ function inspectDocument(payload: OpenCollectiveGraphqlPayload) {
     if (definition.kind === Kind.FRAGMENT_DEFINITION) {
       if (fragments.has(definition.name.value)) {
         throw new OpenCollectiveGraphqlValidationError(
-          `片段 ${definition.name.value} 重复定义。`,
+          `Fragment ${definition.name.value} is defined more than once.`,
         )
       }
       fragments.set(definition.name.value, definition)
       continue
     }
-    throw new OpenCollectiveGraphqlValidationError('请求中包含非可执行的 GraphQL 定义。')
+    throw new OpenCollectiveGraphqlValidationError('The request contains a non-executable GraphQL definition.')
   }
 
   if (operations.length === 0) {
-    throw new OpenCollectiveGraphqlValidationError('GraphQL 请求必须包含查询操作。')
+    throw new OpenCollectiveGraphqlValidationError('The GraphQL request must contain a query operation.')
   }
 
   const operation = selectOperation(operations, payload.operationName)
@@ -186,13 +190,13 @@ function selectOperation(
     const selected = operations.find(operation => operation.name?.value === operationName)
     if (!selected) {
       throw new OpenCollectiveGraphqlValidationError(
-        `找不到名为 ${operationName} 的 GraphQL 查询。`,
+        `No GraphQL query named ${operationName} was found.`,
       )
     }
     return selected
   }
   if (operations.length !== 1) {
-    throw new OpenCollectiveGraphqlValidationError('包含多个查询时必须提供 operationName。')
+    throw new OpenCollectiveGraphqlValidationError('operationName is required when multiple queries are provided.')
   }
   return operations[0]!
 }
@@ -225,18 +229,18 @@ function inspectSelectionSet(
       stats.maxDepth = Math.max(stats.maxDepth, fieldDepth)
       if (stats.fields > MAX_FIELD_COUNT) {
         throw new OpenCollectiveGraphqlValidationError(
-          `GraphQL 查询字段数量不能超过 ${MAX_FIELD_COUNT}。`,
+          `The GraphQL query cannot contain more than ${MAX_FIELD_COUNT} fields.`,
         )
       }
       if (fieldDepth > MAX_QUERY_DEPTH) {
         throw new OpenCollectiveGraphqlValidationError(
-          `GraphQL 查询深度不能超过 ${MAX_QUERY_DEPTH}。`,
+          `The GraphQL query depth cannot exceed ${MAX_QUERY_DEPTH}.`,
         )
       }
 
       if (fieldName === '__typename') {
         if (selection.selectionSet) {
-          throw new OpenCollectiveGraphqlValidationError('__typename 不能包含子字段。')
+          throw new OpenCollectiveGraphqlValidationError('__typename cannot have subfields.')
         }
         continue
       }
@@ -245,7 +249,7 @@ function inspectSelectionSet(
       const fieldPath = [...path, fieldName]
       if (!fieldPolicy) {
         throw new OpenCollectiveGraphqlValidationError(
-          `匿名代理不允许查询字段 ${fieldPath.join('.')}。`,
+          `The anonymous proxy does not allow the field ${fieldPath.join('.')}.`,
         )
       }
 
@@ -253,7 +257,7 @@ function inspectSelectionSet(
       if (selection.selectionSet) {
         if (fieldPolicy === true) {
           throw new OpenCollectiveGraphqlValidationError(
-            `字段 ${fieldPath.join('.')} 不能包含子字段。`,
+            `The field ${fieldPath.join('.')} cannot have subfields.`,
           )
         }
         inspectSelectionSet(
@@ -268,7 +272,7 @@ function inspectSelectionSet(
         )
       } else if (fieldPolicy !== true) {
         throw new OpenCollectiveGraphqlValidationError(
-          `字段 ${fieldPath.join('.')} 必须选择公开子字段。`,
+          `The field ${fieldPath.join('.')} must select allowlisted public subfields.`,
         )
       }
       continue
@@ -291,14 +295,14 @@ function inspectSelectionSet(
     const fragmentName = selection.name.value
     const fragment = fragments.get(fragmentName)
     if (!fragment) {
-      throw new OpenCollectiveGraphqlValidationError(`找不到片段 ${fragmentName}。`)
+      throw new OpenCollectiveGraphqlValidationError(`Fragment ${fragmentName} was not found.`)
     }
     if (activeFragments.has(fragmentName)) {
-      throw new OpenCollectiveGraphqlValidationError(`片段 ${fragmentName} 存在循环引用。`)
+      throw new OpenCollectiveGraphqlValidationError(`Fragment ${fragmentName} contains a cyclic reference.`)
     }
     if (activeFragments.size >= MAX_FRAGMENT_HOPS) {
       throw new OpenCollectiveGraphqlValidationError(
-        `GraphQL 片段嵌套不能超过 ${MAX_FRAGMENT_HOPS} 层。`,
+        `GraphQL fragment nesting cannot exceed ${MAX_FRAGMENT_HOPS} levels.`,
       )
     }
 
@@ -340,7 +344,7 @@ function inspectBoundedArguments(
       (!Number.isInteger(value) || value < bound.minimum || value > bound.maximum)
     ) {
       throw new OpenCollectiveGraphqlValidationError(
-        `${argument.name.value} 必须是 ${bound.minimum} 到 ${bound.maximum} 之间的整数。`,
+        `${argument.name.value} must be an integer between ${bound.minimum} and ${bound.maximum}.`,
       )
     }
   }
@@ -359,7 +363,7 @@ function resolveInteger(
     return undefined
   }
   if (value.kind !== Kind.VARIABLE) {
-    throw new OpenCollectiveGraphqlValidationError(`${argumentName} 必须是整数。`)
+    throw new OpenCollectiveGraphqlValidationError(`${argumentName} must be an integer.`)
   }
 
   const name = value.name.value
@@ -369,7 +373,7 @@ function resolveInteger(
       return undefined
     }
     if (typeof variable !== 'number') {
-      throw new OpenCollectiveGraphqlValidationError(`变量 ${name} 必须是整数。`)
+      throw new OpenCollectiveGraphqlValidationError(`Variable ${name} must be an integer.`)
     }
     return variable
   }

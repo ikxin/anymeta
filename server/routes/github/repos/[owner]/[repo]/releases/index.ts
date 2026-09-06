@@ -7,11 +7,11 @@ import {
 defineRouteMeta({
   openAPI: {
     operationId: 'listGithubRepositoryReleases',
-    tags: ['GitHub 仓库'],
-    summary: '列出仓库版本',
-    description: '返回 GitHub 公共仓库已发布的版本。',
+    tags: ['GitHub Repository'],
+    summary: 'List releases',
+    description: 'Lists published releases for a public GitHub repository.',
     externalDocs: {
-      description: 'GitHub REST API 文档',
+      description: 'GitHub REST API documentation',
       url: 'https://docs.github.com/rest/releases/releases#list-releases',
     },
     security: [],
@@ -25,7 +25,7 @@ defineRouteMeta({
     ],
     responses: {
       200: {
-        description: '版本列表。',
+        description: 'Release list.',
         content: {
           'application/json': {
             schema: {
@@ -62,10 +62,10 @@ defineRouteMeta({
         },
       },
       304: {
-        description: '条件请求命中，内容没有变化。',
+        description: 'Not modified.',
       },
       default: {
-        description: 'GitHub 上游或 AnyMeta 返回的错误。',
+        description: 'GitHub or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/GithubProxyError' },

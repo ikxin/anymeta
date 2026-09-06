@@ -7,11 +7,11 @@ import {
 defineRouteMeta({
   openAPI: {
     operationId: 'listGithubRepositoryContributors',
-    tags: ['GitHub 仓库'],
-    summary: '列出仓库贡献者',
-    description: '按贡献次数降序返回 GitHub 公共仓库的贡献者。',
+    tags: ['GitHub Repository'],
+    summary: 'List repository contributors',
+    description: 'Lists contributors to a public GitHub repository, sorted by contribution count in descending order.',
     externalDocs: {
-      description: 'GitHub REST API 文档',
+      description: 'GitHub REST API documentation',
       url: 'https://docs.github.com/rest/repos/repos#list-repository-contributors',
     },
     security: [],
@@ -21,7 +21,7 @@ defineRouteMeta({
       {
         name: 'anon',
         in: 'query',
-        description: '设置为 1 或 true 时包含匿名贡献者。',
+        description: 'Set to 1 or true to include anonymous contributors.',
         schema: {
           type: 'string',
           enum: ['1', 'true'],
@@ -34,7 +34,7 @@ defineRouteMeta({
     ],
     responses: {
       200: {
-        description: '贡献者列表。',
+        description: 'Contributor list.',
         content: {
           'application/json': {
             schema: {
@@ -59,13 +59,13 @@ defineRouteMeta({
         },
       },
       204: {
-        description: '仓库为空。',
+        description: 'The repository is empty.',
       },
       304: {
-        description: '条件请求命中，内容没有变化。',
+        description: 'Not modified.',
       },
       default: {
-        description: 'GitHub 上游或 AnyMeta 返回的错误。',
+        description: 'GitHub or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/GithubProxyError' },

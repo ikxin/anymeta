@@ -4,11 +4,11 @@ import { proxyGithubRequest } from '#server/utils/github-proxy'
 defineRouteMeta({
   openAPI: {
     operationId: 'searchGithubIssues',
-    tags: ['GitHub 搜索'],
-    summary: '搜索议题和拉取请求',
-    description: '使用 GitHub 搜索语法查找公共议题和拉取请求。',
+    tags: ['GitHub Search'],
+    summary: 'Search issues and pull requests',
+    description: 'Find public issues and pull requests using GitHub search syntax.',
     externalDocs: {
-      description: 'GitHub REST API 文档',
+      description: 'GitHub REST API documentation',
       url: 'https://docs.github.com/rest/search/search#search-issues-and-pull-requests',
     },
     security: [],
@@ -17,7 +17,7 @@ defineRouteMeta({
         name: 'q',
         in: 'query',
         required: true,
-        description: '包含搜索词和限定符的 GitHub 搜索查询。',
+        description: 'A GitHub search query containing search terms and qualifiers.',
         schema: {
           type: 'string',
         },
@@ -26,7 +26,7 @@ defineRouteMeta({
       {
         name: 'sort',
         in: 'query',
-        description: '排序字段，例如 comments、reactions、interactions、created 或 updated。',
+        description: 'The sort field, such as comments, reactions, interactions, created, or updated.',
         schema: {
           type: 'string',
         },
@@ -34,7 +34,7 @@ defineRouteMeta({
       {
         name: 'order',
         in: 'query',
-        description: '排序方向。',
+        description: 'The sort direction.',
         schema: {
           type: 'string',
           enum: ['desc', 'asc'],
@@ -48,7 +48,7 @@ defineRouteMeta({
     ],
     responses: {
       200: {
-        description: '搜索结果。',
+        description: 'Search results.',
         content: {
           'application/json': {
             schema: {
@@ -79,10 +79,10 @@ defineRouteMeta({
         },
       },
       304: {
-        description: '条件请求命中，内容没有变化。',
+        description: 'Not modified.',
       },
       default: {
-        description: '搜索参数无效、额度受限，或者 GitHub 上游、AnyMeta 返回错误。',
+        description: 'The search parameters are invalid, the rate limit was reached, or GitHub or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/GithubProxyError' },

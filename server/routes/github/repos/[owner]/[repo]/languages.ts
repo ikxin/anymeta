@@ -7,11 +7,11 @@ import {
 defineRouteMeta({
   openAPI: {
     operationId: 'listGithubRepositoryLanguages',
-    tags: ['GitHub 仓库'],
-    summary: '列出仓库语言',
-    description: '返回每种编程语言对应的代码字节数。',
+    tags: ['GitHub Repository'],
+    summary: 'List repository languages',
+    description: 'Returns the number of bytes of code written in each language.',
     externalDocs: {
-      description: 'GitHub REST API 文档',
+      description: 'GitHub REST API documentation',
       url: 'https://docs.github.com/rest/repos/repos#list-repository-languages',
     },
     security: [],
@@ -23,7 +23,7 @@ defineRouteMeta({
     ],
     responses: {
       200: {
-        description: '语言名称到代码字节数的映射。',
+        description: 'A mapping of language names to the number of bytes of code.',
         content: {
           'application/json': {
             schema: {
@@ -41,10 +41,10 @@ defineRouteMeta({
         },
       },
       304: {
-        description: '条件请求命中，内容没有变化。',
+        description: 'Not modified.',
       },
       default: {
-        description: 'GitHub 上游或 AnyMeta 返回的错误。',
+        description: 'GitHub or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/GithubProxyError' },

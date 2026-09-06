@@ -7,11 +7,11 @@ import {
 defineRouteMeta({
   openAPI: {
     operationId: 'getGithubRepository',
-    tags: ['GitHub 仓库'],
-    summary: '获取仓库信息',
-    description: '返回 GitHub 公共仓库的元数据。',
+    tags: ['GitHub Repository'],
+    summary: 'Get a repository',
+    description: 'Returns metadata for a public GitHub repository.',
     externalDocs: {
-      description: 'GitHub REST API 文档',
+      description: 'GitHub REST API documentation',
       url: 'https://docs.github.com/rest/repos/repos#get-a-repository',
     },
     security: [],
@@ -23,7 +23,7 @@ defineRouteMeta({
     ],
     responses: {
       200: {
-        description: '仓库元数据。',
+        description: 'Repository metadata.',
         content: {
           'application/json': {
             schema: {
@@ -65,10 +65,10 @@ defineRouteMeta({
         },
       },
       304: {
-        description: '条件请求命中，内容没有变化。',
+        description: 'Not modified.',
       },
       default: {
-        description: 'GitHub 上游或 AnyMeta 返回的错误。',
+        description: 'GitHub or AnyMeta returned an error.',
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/GithubProxyError' },

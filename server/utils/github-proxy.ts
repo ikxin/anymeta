@@ -58,7 +58,7 @@ export async function proxyGithubRequest(event: H3Event, request: GithubProxyReq
     )
     throw createError({
       statusCode: 405,
-      message: '该 GitHub 代理接口不接受当前请求方法。',
+      message: 'This GitHub proxy endpoint does not accept the current request method.',
     })
   }
 
@@ -96,7 +96,7 @@ export async function proxyGithubRequest(event: H3Event, request: GithubProxyReq
       pool.release(lease)
       throw createError({
         statusCode: 502,
-        message: '无法连接 GitHub 上游接口。',
+        message: 'Unable to connect to the GitHub upstream API.',
         cause: error,
       })
     }
@@ -110,17 +110,17 @@ export async function proxyGithubRequest(event: H3Event, request: GithubProxyReq
     return sendWebResponse(event, createClientResponse(upstreamResponse, method))
   }
 
-  throw createError({ statusCode: 502, message: 'GitHub 上游认证连续失败。' })
+  throw createError({ statusCode: 502, message: 'GitHub upstream authentication failed repeatedly.' })
 }
 
 export function getGithubRepositoryPath(event: H3Event, suffix?: string) {
-  const owner = readPathSegment(event, 'owner', '仓库所有者')
-  const repo = readPathSegment(event, 'repo', '仓库名称')
+  const owner = readPathSegment(event, 'owner', 'repository owner')
+  const repo = readPathSegment(event, 'repo', 'repository name')
   return `repos/${owner}/${repo}${suffix ? `/${suffix}` : ''}`
 }
 
 function readPathSegment(event: H3Event, name: string, label: string) {
-  const decoded = decodeRouteParam(getRouterParam(event, name), `${label}包含无效编码。`)
+  const decoded = decodeRouteParam(getRouterParam(event, name), `${label} contains invalid encoding.`)
   if (
     !decoded ||
     decoded.length > 100 ||
@@ -130,7 +130,7 @@ function readPathSegment(event: H3Event, name: string, label: string) {
     decoded.includes('\\') ||
     decoded.includes('\0')
   ) {
-    throw createError({ statusCode: 400, message: `${label}无效。` })
+    throw createError({ statusCode: 400, message: `${label} is invalid.` })
   }
   return encodeURIComponent(decoded)
 }
