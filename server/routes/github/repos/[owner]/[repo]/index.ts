@@ -10,8 +10,36 @@ defineRouteMeta({
     tags: ['GitHub Repository'],
     summary: 'Get a repository',
     description: 'Returns metadata for a public GitHub repository.',
+    'x-i18n': {
+      'zh-CN': {
+        tags: ['GitHub 仓库'],
+        summary: '获取仓库信息',
+        description: '返回公开 GitHub 仓库的元数据。',
+      },
+      'zh-TW': {
+        tags: ['GitHub 儲存庫'],
+        summary: '取得儲存庫資訊',
+        description: '傳回公開 GitHub 儲存庫的中繼資料。',
+      },
+      ja: {
+        tags: ['GitHub リポジトリ'],
+        summary: 'リポジトリ情報を取得',
+        description: '公開 GitHub リポジトリのメタデータを返します。',
+      },
+      ko: {
+        tags: ['GitHub 저장소'],
+        summary: '저장소 정보 조회',
+        description: '공개 GitHub 저장소의 메타데이터를 반환합니다.',
+      },
+    },
     externalDocs: {
       description: 'GitHub REST API documentation',
+      'x-i18n': {
+        'zh-CN': { description: 'GitHub REST API 文档' },
+        'zh-TW': { description: 'GitHub REST API 文件' },
+        ja: { description: 'GitHub REST API ドキュメント' },
+        ko: { description: 'GitHub REST API 문서' },
+      },
       url: 'https://docs.github.com/rest/repos/repos#get-a-repository',
     },
     security: [],
@@ -24,6 +52,12 @@ defineRouteMeta({
     responses: {
       200: {
         description: 'Repository metadata.',
+        'x-i18n': {
+          'zh-CN': { description: '仓库元数据。' },
+          'zh-TW': { description: '儲存庫中繼資料。' },
+          ja: { description: 'リポジトリのメタデータ。' },
+          ko: { description: '저장소 메타데이터.' },
+        },
         content: {
           'application/json': {
             schema: {
@@ -66,9 +100,21 @@ defineRouteMeta({
       },
       304: {
         description: 'Not modified.',
+        'x-i18n': {
+          'zh-CN': { description: '内容未修改。' },
+          'zh-TW': { description: '內容未修改。' },
+          ja: { description: '変更されていません。' },
+          ko: { description: '변경되지 않았습니다.' },
+        },
       },
       default: {
         description: 'GitHub or AnyMeta returned an error.',
+        'x-i18n': {
+          'zh-CN': { description: 'GitHub 或 AnyMeta 返回了错误。' },
+          'zh-TW': { description: 'GitHub 或 AnyMeta 傳回了錯誤。' },
+          ja: { description: 'GitHub または AnyMeta がエラーを返しました。' },
+          ko: { description: 'GitHub 또는 AnyMeta가 오류를 반환했습니다.' },
+        },
         content: {
           'application/json': {
             schema: { $ref: '#/components/schemas/GithubProxyError' },

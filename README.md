@@ -2,6 +2,60 @@
 
 AnyMeta 为 GitHub、OpenCollective、npm 等平台的公开元数据提供匿名代理。GitHub 代理使用 GitHub App 安装令牌，OpenCollective 代理可以使用服务端 Personal Token；两者都不接收或保存调用者的个人访问令牌。
 
+## 接口文档与调试
+
+首页 `/` 使用 Nuxt UI 展示接口目录，每个接口通过 `/docs/{operationId}` 提供独立的文档与调试页面，例如 `/docs/getGithubRepository`、`/docs/githubGraphql`。页面支持直接访问、刷新和分享，未知接口返回 404；默认语言为英语，也支持简体中文、繁体中文、日语和韩语。
+
+文档直接读取 Nitro 生成的 `/_openapi.json`。接口目录、参数、请求体和响应结构均来自路由的 `defineRouteMeta({ openAPI: ... })`。新增接口时声明 `summary` 或 `operationId` 即可出现在目录中，无需另行维护页面数据；未设置 `operationId` 时使用方法与路径组合生成标识。Nitro 自动生成的内部路由和页面兜底路由不会展示。
+
+- 通过紧凑的分组侧栏浏览和搜索接口，点击目录进入各自独立的文档页面。
+- 查看必填参数、默认值、枚举、响应状态，以及可展开的嵌套数据结构和示例。
+- 正文展示参数与响应定义，右侧展示请求和响应示例；点击调试按钮，在弹窗中填写参数或编辑 JSON 请求体。GitHub 和 OpenCollective GraphQL 均提供可编辑的查询示例。
+- 发送当前站点的真实请求，查看状态码、耗时、响应大小、响应体和响应头；支持取消请求，30 秒后自动超时。
+- 复制随参数同步更新的 cURL、JavaScript 请求示例，切换明暗主题，在移动端使用接口目录。
+
+调试请求由浏览器直接发往当前 AnyMeta 站点，不携带 Cookie。GitHub 接口仍需部署者配置服务端环境变量；配置缺失、上游限流等错误会显示在请求结果中。原始 OpenAPI 文档继续通过 `/_openapi.json` 提供，内置 Scalar 和 Swagger 页面已关闭。
+
+## 国际化
+
+使用 `@nuxtjs/i18n`，默认语言及缺失词条的回退语言均为英语。英语地址不带语言前缀，其余语言使用对应前缀；不根据浏览器语言自动跳转，因此访问 `/` 始终默认显示英语。
+
+| 语言 | 语言代码 | 接口文档地址示例 |
+| --- | --- | --- |
+| 英语 | `en` | `/docs/getGithubRepository` |
+| 简体中文 | `zh-CN` | `/zh-CN/docs/getGithubRepository` |
+| 繁体中文 | `zh-TW` | `/zh-TW/docs/getGithubRepository` |
+| 日语 | `ja` | `/ja/docs/getGithubRepository` |
+| 韩语 | `ko` | `/ko/docs/getGithubRepository` |
+
+桌面端侧栏底部、移动端页头的语言菜单会切换到当前接口的对应语言页面。目录及返回首页链接都会保留当前语言，Nuxt UI 内置提示、页面标题和 HTML 语言属性同步切换。
+
+界面翻译按需加载，每种语言只保留 `i18n/locales/{语言代码}.json` 一个文件。文件内保留 `site` 和 `ui` 两个命名空间，分别管理页面导航和文档组件、请求调试。网站总述使用 `site.description`；新增界面词条时应同步补全五种语言。
+
+接口文案直接维护在对应的 `server/routes/**` 路由文件中。标准 OpenAPI 字段保存默认英文，同一节点下的 `x-i18n` 保存其他语言的覆盖值，例如：
+
+```ts
+defineRouteMeta({
+  openAPI: {
+    operationId: 'getGithubRepository',
+    summary: 'Get a repository',
+    description: 'Returns metadata for a public GitHub repository.',
+    'x-i18n': {
+      'zh-CN': { summary: '获取仓库信息', description: '返回公开 GitHub 仓库的元数据。' },
+      'zh-TW': { summary: '取得儲存庫資訊', description: '傳回公開 GitHub 儲存庫的中繼資料。' },
+      ja: { summary: 'リポジトリ情報を取得', description: '公開 GitHub リポジトリのメタデータを返します。' },
+      ko: { summary: '저장소 정보 조회', description: '공개 GitHub 저장소의 메타데이터를 반환합니다.' },
+    },
+  },
+})
+```
+
+标题、说明和分组使用同一节点的 `title`、`summary`、`description`、`tags` 覆盖值。参数、请求体字段、响应和外部文档说明也按相同方式配置；共享参数与错误结构在现有的 `$global.components` 定义处维护一次，所有 `$ref` 引用自动复用。缺少语言或字段时保留默认英文。
+
+`defineRouteMeta` 由 Nitro 静态提取，翻译必须写为对象字面量，不能调用函数或引用外部变量。前端通过 `app/utils/localize-openapi.ts` 读取 `x-i18n`，无需再维护接口词条文件或英文原文映射表。原始 `/_openapi.json` 保留英文标准字段和全部翻译扩展，供文档页面读取。
+
+文档翻译只影响展示。真实 API 路径与 `/_openapi.json` 不加语言前缀，参数名、枚举、请求示例和实际响应内容不会被翻译。
+
 ## GitHub 代理
 
 当前支持以下只读接口：
