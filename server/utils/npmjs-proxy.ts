@@ -8,9 +8,11 @@ import {
   setResponseHeader,
   type H3Event,
 } from 'h3'
+import { createCachedProxyRequest } from '#server/utils/proxy-cache'
 
 const NPMJS_API_ORIGIN = 'https://api.npmjs.org'
 const UPSTREAM_TIMEOUT = 15_000
+const cachedNpmjsRequest = createCachedProxyRequest('npmjsProxy', 6 * 60 * 60)
 const FORWARDED_RESPONSE_HEADERS = new Set([
   'cache-control',
   'content-type',
@@ -45,12 +47,12 @@ export async function proxyNpmjsRequest(event: H3Event, path: string) {
 
   let response: Response
   try {
-    response = await fetch(url, {
+    response = await cachedNpmjsRequest(event, JSON.stringify([url.href, headers.get('accept')]), () => fetch(url, {
       method,
       headers,
       redirect: 'manual',
       signal: AbortSignal.timeout(UPSTREAM_TIMEOUT),
-    })
+    }))
   } catch (error) {
     throw createError({ statusCode: 502, message: '无法连接 npmjs 上游接口。', cause: error })
   }

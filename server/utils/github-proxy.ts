@@ -13,12 +13,15 @@ import {
   GITHUB_API_VERSION,
   GithubTokenPoolError,
   type GithubRateResource,
-  type GithubTokenLease,
 } from '#server/utils/github-app'
+import { createCachedProxyRequest } from '#server/utils/proxy-cache'
 
 const GITHUB_API_ORIGIN = 'https://api.github.com'
 const UPSTREAM_TIMEOUT = 15_000
 const MAX_AUTH_ATTEMPTS = 2
+const MAX_UPSTREAM_REDIRECTS = 5
+const REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308])
+const cachedGithubRequest = createCachedProxyRequest('githubProxy', 5 * 60)
 
 const FORWARDED_RESPONSE_HEADERS = new Set([
   'cache-control',
@@ -78,40 +81,42 @@ export async function proxyGithubRequest(event: H3Event, request: GithubProxyReq
   const upstreamUrl = new URL(`/${request.path}`, GITHUB_API_ORIGIN)
   upstreamUrl.search = requestUrl.search
 
-  for (let attempt = 1; attempt <= MAX_AUTH_ATTEMPTS; attempt += 1) {
-    let lease: GithubTokenLease
-    try {
-      lease = await pool.acquire(request.resource)
-    } catch (error) {
-      throwTokenPoolError(event, error)
+  const response = await cachedGithubRequest(event, JSON.stringify([
+    config.githubAppId,
+    upstreamUrl.href,
+    request.accept || 'application/vnd.github+json',
+  ]), async () => {
+    for (let attempt = 1; attempt <= MAX_AUTH_ATTEMPTS; attempt += 1) {
+      const lease = await pool.acquire(request.resource)
+
+      let upstreamResponse: Response
+      try {
+        upstreamResponse = await fetchWithTimeout(upstreamUrl, {
+          method,
+          headers: createUpstreamHeaders(event, lease.token, request.contentType, request.accept),
+          body: request.body,
+        })
+      } catch (error) {
+        pool.release(lease)
+        throw createError({
+          statusCode: 502,
+          message: 'Unable to connect to the GitHub upstream API.',
+          cause: error,
+        })
+      }
+
+      pool.release(lease, upstreamResponse)
+      if (upstreamResponse.status === 401 && attempt < MAX_AUTH_ATTEMPTS) {
+        await upstreamResponse.body?.cancel()
+        continue
+      }
+
+      return upstreamResponse
     }
 
-    let upstreamResponse: Response
-    try {
-      upstreamResponse = await fetchWithTimeout(upstreamUrl, {
-        method,
-        headers: createUpstreamHeaders(event, lease.token, request.contentType, request.accept),
-        body: request.body,
-      })
-    } catch (error) {
-      pool.release(lease)
-      throw createError({
-        statusCode: 502,
-        message: 'Unable to connect to the GitHub upstream API.',
-        cause: error,
-      })
-    }
-
-    pool.release(lease, upstreamResponse)
-    if (upstreamResponse.status === 401 && attempt < MAX_AUTH_ATTEMPTS) {
-      await upstreamResponse.body?.cancel()
-      continue
-    }
-
-    return sendWebResponse(event, createClientResponse(upstreamResponse, method))
-  }
-
-  throw createError({ statusCode: 502, message: 'GitHub upstream authentication failed repeatedly.' })
+    throw createError({ statusCode: 502, message: 'GitHub upstream authentication failed repeatedly.' })
+  }).catch(error => throwTokenPoolError(event, error))
+  return sendWebResponse(event, createClientResponse(response, method))
 }
 
 export function getGithubRepositoryPath(event: H3Event, suffix?: string) {
@@ -172,8 +177,42 @@ function createUpstreamHeaders(event: H3Event, token: string, contentType?: stri
 async function fetchWithTimeout(url: URL, init: RequestInit) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT)
+  const method = (init.method || 'GET').toUpperCase()
+  let upstreamUrl = url
+  let redirects = 0
   try {
-    return await fetch(url, { ...init, redirect: 'manual', signal: controller.signal })
+    while (true) {
+      const response = await fetch(upstreamUrl, {
+        ...init,
+        redirect: 'manual',
+        signal: controller.signal,
+      })
+      const location = response.headers.get('location')
+      if (
+        !REDIRECT_STATUSES.has(response.status) ||
+        !location ||
+        (method !== 'GET' && method !== 'HEAD')
+      ) {
+        return response
+      }
+
+      let target: URL
+      try {
+        target = new URL(location, upstreamUrl)
+      } catch {
+        return response
+      }
+      if (target.origin !== GITHUB_API_ORIGIN || target.username || target.password) {
+        return response
+      }
+
+      await response.body?.cancel()
+      if (redirects >= MAX_UPSTREAM_REDIRECTS) {
+        throw new Error('GitHub 上游重定向次数超出限制。')
+      }
+      upstreamUrl = target
+      redirects += 1
+    }
   } finally {
     clearTimeout(timeout)
   }

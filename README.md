@@ -73,7 +73,7 @@ defineRouteMeta({
 
 REST、搜索和 GraphQL 分别维护额度状态。令牌池默认随机预热 5 个安全安装，在额度耗尽时逐步扩容，并在令牌续期时轮换安装来源，避免长期集中消耗少数安装者。安装令牌仅保存在进程内存中。GraphQL 入口只允许查询操作，并限制请求体、查询深度、字段数量、片段嵌套和分页数量。
 
-REST 接口透传上游响应体、状态码以及内容类型、缓存、分页等响应头，不包装数据、不重命名字段、不汇总 Stars，也不自动跟随重定向；上游重定向通过原始状态码和 `Location` 返回。组织仓库列表保留上游分页行为，可使用 `type`、`sort`、`direction`、`per_page` 和 `page` 查询参数。
+REST 接口透传上游最终响应体、状态码以及内容类型、缓存、分页等响应头，不包装数据、不重命名字段、不汇总 Stars。GET 和 HEAD 请求遇到仓库迁移等重定向时，由服务端继续携带安装令牌跟随，仅限 `https://api.github.com` 同源地址，最多 5 次；其他重定向保留原始状态码和 `Location`。这样客户端不会因仓库迁移跳到 GitHub 发起未认证请求。组织仓库列表保留上游分页行为，可使用 `type`、`sort`、`direction`、`per_page` 和 `page` 查询参数。
 
 README 接口支持 `ref` 查询参数。未传入 `Accept` 时使用 `application/vnd.github+json`，保留包含 Base64 编码 `content` 的原始 JSON 对象；也可以通过 `Accept: application/vnd.github.raw+json` 或 `application/vnd.github.html+json` 请求上游提供的原文或 HTML。代理自身不解码或渲染 README。
 
@@ -98,6 +98,10 @@ curl http://localhost:3000/npmjs/downloads/point/last-month/nuxt,vue
 npmjs 代理无需配置令牌，也不转发调用者的 Cookie 或认证头。响应体、状态码和内容类型、缓存等响应头直接透传，支持 `HEAD`、`If-None-Match` 和 `If-Modified-Since`，上游错误不转换成成功响应。代理固定访问上述官方 API 域名，不提供任意地址代理。
 
 官方参考：[下载统计接口](https://github.com/npm/registry/blob/main/docs/download-counts.md)。
+
+服务端使用 Nitro `defineCachedFunction` 缓存普通 GET 请求：npmjs 下载统计缓存 6 小时，GitHub REST 接口缓存 5 分钟。缓存按上游完整地址及响应格式区分，保留原始响应体、状态码和响应头；同一资源的并发回源由 Nitro 合并，过期后使用 SWR 在后台刷新，429 等非 200 响应不会覆盖已有成功缓存。首次访问没有缓存时，仍会返回真实的上游错误。
+
+HEAD、GraphQL POST 和带条件请求头的请求直接回源。缓存使用 Nitro 默认存储，生产环境默认为实例内存；重启后需要重新填充，多实例共享缓存可通过 Nitro 的 `cache` 存储挂载配置。
 
 ## OpenCollective 代理
 
