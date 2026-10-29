@@ -44,6 +44,7 @@ interface GithubProxyRequest {
   method?: 'GET' | 'POST'
   body?: string
   contentType?: string
+  accept?: string
 }
 
 export async function proxyGithubRequest(event: H3Event, request: GithubProxyRequest) {
@@ -89,7 +90,7 @@ export async function proxyGithubRequest(event: H3Event, request: GithubProxyReq
     try {
       upstreamResponse = await fetchWithTimeout(upstreamUrl, {
         method,
-        headers: createUpstreamHeaders(event, lease.token, request.contentType),
+        headers: createUpstreamHeaders(event, lease.token, request.contentType, request.accept),
         body: request.body,
       })
     } catch (error) {
@@ -119,6 +120,11 @@ export function getGithubRepositoryPath(event: H3Event, suffix?: string) {
   return `repos/${owner}/${repo}${suffix ? `/${suffix}` : ''}`
 }
 
+export function getGithubOrganizationPath(event: H3Event, suffix?: string) {
+  const org = readPathSegment(event, 'org', '组织名称')
+  return `orgs/${org}${suffix ? `/${suffix}` : ''}`
+}
+
 function readPathSegment(event: H3Event, name: string, label: string) {
   const decoded = decodeRouteParam(getRouterParam(event, name), `${label} contains invalid encoding.`)
   if (
@@ -143,9 +149,9 @@ function decodeRouteParam(value: string | undefined, errorMessage: string) {
   }
 }
 
-function createUpstreamHeaders(event: H3Event, token: string, contentType?: string) {
+function createUpstreamHeaders(event: H3Event, token: string, contentType?: string, accept?: string) {
   const headers = new Headers({
-    Accept: 'application/vnd.github+json',
+    Accept: accept || 'application/vnd.github+json',
     Authorization: `Bearer ${token}`,
     'User-Agent': 'anymeta',
     'X-GitHub-Api-Version': GITHUB_API_VERSION,
@@ -167,7 +173,7 @@ async function fetchWithTimeout(url: URL, init: RequestInit) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT)
   try {
-    return await fetch(url, { ...init, signal: controller.signal })
+    return await fetch(url, { ...init, redirect: 'manual', signal: controller.signal })
   } finally {
     clearTimeout(timeout)
   }

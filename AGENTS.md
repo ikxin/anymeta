@@ -8,14 +8,18 @@
 
 ## 路由设计
 
-当前阶段只需要支持 GitHub 和 npmjs 的部分接口，分别以 /github/{path} 和 /npm/{path} 作为 API 接口前缀，再拼接上游 API 的路径。
+当前阶段只需要支持 GitHub 和 npmjs 的部分接口，分别以 /github/{path} 和 /npmjs/{path} 作为 API 接口前缀，再拼接上游 API 的路径。
 
 **GitHub API**
 
 - `https://api.github.com/graphql`
+- `https://api.github.com/orgs/{org}`
+- `https://api.github.com/orgs/{org}/repos`
 - `https://api.github.com/repos/{owner}/{repo}/contributors`
 - `https://api.github.com/repos/{owner}/{repo}/languages`
+- `https://api.github.com/repos/{owner}/{repo}/readme`
 - `https://api.github.com/repos/{owner}/{repo}/releases`
+- `https://api.github.com/repos/{owner}/{repo}/releases/latest`
 - `https://api.github.com/repos/{owner}/{repo}`
 - `https://api.github.com/search/issues`
 
@@ -24,12 +28,6 @@
 - `https://api.npmjs.org/downloads/point/{period}/{package}`
 - `https://api.npmjs.org/downloads/point/{period}/{package1},{package2},...`
 - `https://api.npmjs.org/downloads/range/{start}:{end}/{package}`
-- `https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/{package}`
-- `https://registry.npmjs.org/-/package/{package}/dist-tags/{tag}`
-- `https://registry.npmjs.org/{package}/-/{tarball}.tgz`
-- `https://registry.npmjs.org/{package}/{version}`
-- `https://registry.npmjs.org/{package}/latest`
-- `https://registry.npmjs.org/{package}`
 
 ## 注意事项
 

@@ -40,6 +40,7 @@ export default defineNuxtConfig({
   },
   routeRules: {
     '/github/**': { cors: true },
+    '/npmjs/**': { cors: true },
     '/opencollective/**': { cors: true },
   },
 })

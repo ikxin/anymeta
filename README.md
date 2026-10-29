@@ -61,13 +61,43 @@ defineRouteMeta({
 当前支持以下只读接口：
 
 - `POST /github/graphql`
+- `GET /github/orgs/{org}`
+- `GET /github/orgs/{org}/repos`
 - `GET /github/repos/{owner}/{repo}/contributors`
 - `GET /github/repos/{owner}/{repo}/languages`
+- `GET /github/repos/{owner}/{repo}/readme`
 - `GET /github/repos/{owner}/{repo}/releases`
+- `GET /github/repos/{owner}/{repo}/releases/latest`
 - `GET /github/repos/{owner}/{repo}`
 - `GET /github/search/issues`
 
 REST、搜索和 GraphQL 分别维护额度状态。令牌池默认随机预热 5 个安全安装，在额度耗尽时逐步扩容，并在令牌续期时轮换安装来源，避免长期集中消耗少数安装者。安装令牌仅保存在进程内存中。GraphQL 入口只允许查询操作，并限制请求体、查询深度、字段数量、片段嵌套和分页数量。
+
+REST 接口透传上游响应体、状态码以及内容类型、缓存、分页等响应头，不包装数据、不重命名字段、不汇总 Stars，也不自动跟随重定向；上游重定向通过原始状态码和 `Location` 返回。组织仓库列表保留上游分页行为，可使用 `type`、`sort`、`direction`、`per_page` 和 `page` 查询参数。
+
+README 接口支持 `ref` 查询参数。未传入 `Accept` 时使用 `application/vnd.github+json`，保留包含 Base64 编码 `content` 的原始 JSON 对象；也可以通过 `Accept: application/vnd.github.raw+json` 或 `application/vnd.github.html+json` 请求上游提供的原文或 HTML。代理自身不解码或渲染 README。
+
+## npmjs 代理
+
+npmjs 代理仅访问 `api.npmjs.org`，统一使用 `/npmjs` 前缀，当前支持以下只读接口：
+
+| 接口 | 上游 |
+| --- | --- |
+| `GET /npmjs/downloads/point/{period}/{package}` | `https://api.npmjs.org/downloads/point/{period}/{package}` |
+
+`period` 支持 `last-day`、`last-week`、`last-month`、`last-year`、`YYYY-MM-DD` 和 `YYYY-MM-DD:YYYY-MM-DD`。下载统计支持单个普通包、单个作用域包，以及用逗号分隔的多个普通包；批量查询的限制和错误响应保持 npm 上游行为。
+
+作用域包支持直接保留斜杠或将其编码为 `%2F`。例如，`/npmjs/downloads/point/last-month/@nuxt/kit` 和 `/npmjs/downloads/point/last-month/@nuxt%2Fkit` 都查询同一个包的下载量。请求示例：
+
+```bash
+curl http://localhost:3000/npmjs/downloads/point/last-month/nuxt
+curl http://localhost:3000/npmjs/downloads/point/last-month/@nuxt/kit
+curl http://localhost:3000/npmjs/downloads/point/last-month/nuxt,vue
+```
+
+npmjs 代理无需配置令牌，也不转发调用者的 Cookie 或认证头。响应体、状态码和内容类型、缓存等响应头直接透传，支持 `HEAD`、`If-None-Match` 和 `If-Modified-Since`，上游错误不转换成成功响应。代理固定访问上述官方 API 域名，不提供任意地址代理。
+
+官方参考：[下载统计接口](https://github.com/npm/registry/blob/main/docs/download-counts.md)。
 
 ## OpenCollective 代理
 
