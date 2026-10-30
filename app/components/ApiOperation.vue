@@ -43,6 +43,10 @@ const openResponse = ref<string>()
 watch(responseCode, (code) => {
   if (openResponse.value !== code) openResponse.value = undefined
 })
+function toggleResponse(code: string) {
+  responseCode.value = code
+  openResponse.value = openResponse.value === code ? undefined : code
+}
 const statusTabs = computed(() => responseCodes.value.map((code) => ({ label: code, value: code })))
 const requestTypes = computed(() => Object.entries(props.operation.requestBody?.content || {}))
 const externalDocsUrl = computed(() => {
@@ -149,10 +153,7 @@ const externalDocsUrl = computed(() => {
               type="button"
               class="flex w-full items-start gap-2 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-primary"
               :aria-expanded="openResponse === code"
-              @click="
-                responseCode = code
-                openResponse = openResponse === code ? undefined : code
-              "
+              @click="toggleResponse(code)"
             >
               <UIcon
                 name="i-lucide-chevron-right"
