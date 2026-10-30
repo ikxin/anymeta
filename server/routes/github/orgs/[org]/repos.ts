@@ -6,7 +6,8 @@ defineRouteMeta({
     operationId: 'listGithubOrganizationRepositories',
     tags: ['GitHub Organization'],
     summary: 'List organization repositories',
-    description: 'Returns the original paginated repository array from GitHub. No star totals or other aggregates are added.',
+    description:
+      'Returns the original paginated repository array from GitHub. No star totals or other aggregates are added.',
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 组织'],
@@ -21,15 +22,19 @@ defineRouteMeta({
       ja: {
         tags: ['GitHub 組織'],
         summary: '組織のリポジトリ一覧を取得',
-        description: 'GitHub のページ分割されたリポジトリ配列をそのまま返します。スター数などの集計は追加しません。',
+        description:
+          'GitHub のページ分割されたリポジトリ配列をそのまま返します。スター数などの集計は追加しません。',
       },
       ko: {
         tags: ['GitHub 조직'],
         summary: '조직 저장소 목록 조회',
-        description: 'GitHub의 페이지별 저장소 배열을 그대로 반환하며 스타 합계 등의 집계를 추가하지 않습니다.',
+        description:
+          'GitHub의 페이지별 저장소 배열을 그대로 반환하며 스타 합계 등의 집계를 추가하지 않습니다.',
       },
     },
-    externalDocs: { url: 'https://docs.github.com/rest/repos/repos#list-organization-repositories' },
+    externalDocs: {
+      url: 'https://docs.github.com/rest/repos/repos#list-organization-repositories',
+    },
     security: [],
     parameters: [
       { $ref: '#/components/parameters/GithubOrganization' },
@@ -43,7 +48,11 @@ defineRouteMeta({
           ja: { description: '返すリポジトリの種類。' },
           ko: { description: '반환할 저장소 유형.' },
         },
-        schema: { type: 'string', enum: ['all', 'public', 'private', 'forks', 'sources', 'member'], default: 'all' },
+        schema: {
+          type: 'string',
+          enum: ['all', 'public', 'private', 'forks', 'sources', 'member'],
+          default: 'all',
+        },
       },
       {
         name: 'sort',
@@ -55,7 +64,11 @@ defineRouteMeta({
           ja: { description: '並べ替えに使う項目。' },
           ko: { description: '정렬 기준 속성.' },
         },
-        schema: { type: 'string', enum: ['created', 'updated', 'pushed', 'full_name'], default: 'created' },
+        schema: {
+          type: 'string',
+          enum: ['created', 'updated', 'pushed', 'full_name'],
+          default: 'created',
+        },
       },
       {
         name: 'direction',
@@ -112,7 +125,7 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   return proxyGithubRequest(event, {
     path: getGithubOrganizationPath(event, 'repos'),
     resource: 'core',

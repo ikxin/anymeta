@@ -1,10 +1,13 @@
 export interface ApiLocalizedMetadata {
-  'x-i18n'?: Record<string, {
-    title?: string
-    summary?: string
-    description?: string
-    tags?: string[]
-  }>
+  'x-i18n'?: Record<
+    string,
+    {
+      title?: string
+      summary?: string
+      description?: string
+      tags?: string[]
+    }
+  >
 }
 
 export interface ApiSchema extends ApiLocalizedMetadata {
@@ -99,12 +102,13 @@ interface ApiOperationDefinition extends ApiLocalizedMetadata {
 
 type HttpMethod = 'get' | 'put' | 'post' | 'delete' | 'options' | 'head' | 'patch' | 'trace'
 
-type ApiPathItem = Partial<Record<HttpMethod, ApiOperationDefinition>> & ApiLocalizedMetadata & {
-  $ref?: string
-  summary?: string
-  description?: string
-  parameters?: (ApiParameter | ApiReference)[]
-}
+type ApiPathItem = Partial<Record<HttpMethod, ApiOperationDefinition>> &
+  ApiLocalizedMetadata & {
+    $ref?: string
+    summary?: string
+    description?: string
+    parameters?: (ApiParameter | ApiReference)[]
+  }
 
 export interface OpenApiDocument {
   openapi?: string
@@ -115,8 +119,8 @@ export interface OpenApiDocument {
     [key: string]: unknown
   }
   paths?: Record<string, ApiPathItem>
-  tags?: { name: string, description?: string, externalDocs?: ApiExternalDocs }[]
-  servers?: { url: string, description?: string }[]
+  tags?: { name: string; description?: string; externalDocs?: ApiExternalDocs }[]
+  servers?: { url: string; description?: string }[]
   externalDocs?: ApiExternalDocs
   components?: {
     schemas?: Record<string, ApiSchema>
@@ -142,7 +146,16 @@ export interface ApiOperation {
   externalDocs?: ApiExternalDocs
 }
 
-const httpMethods: HttpMethod[] = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace']
+const httpMethods: HttpMethod[] = [
+  'get',
+  'put',
+  'post',
+  'delete',
+  'options',
+  'head',
+  'patch',
+  'trace',
+]
 const parameterLocations = new Set(['path', 'query', 'header', 'cookie'])
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -163,7 +176,8 @@ function localReference(document: OpenApiDocument, reference: string): unknown {
   for (const segment of pointer.split('/')) {
     const key = segment.replace(/~1/g, '/').replace(/~0/g, '~')
     if (Array.isArray(value)) {
-      if (!/^(0|[1-9]\d*)$/.test(key) || !Object.prototype.hasOwnProperty.call(value, key)) return undefined
+      if (!/^(0|[1-9]\d*)$/.test(key) || !Object.prototype.hasOwnProperty.call(value, key))
+        return undefined
       value = value[Number(key)]
     } else {
       if (!isRecord(value) || !Object.prototype.hasOwnProperty.call(value, key)) return undefined
@@ -173,7 +187,10 @@ function localReference(document: OpenApiDocument, reference: string): unknown {
   return value
 }
 
-function resolveObject(document: OpenApiDocument, value: unknown): Record<string, unknown> | undefined {
+function resolveObject(
+  document: OpenApiDocument,
+  value: unknown,
+): Record<string, unknown> | undefined {
   if (!isRecord(value)) return undefined
 
   let resolved = { ...value }
@@ -208,14 +225,23 @@ function firstExample(document: OpenApiDocument, examples: unknown): unknown {
 
 function resolveParameter(document: OpenApiDocument, value: unknown): ApiParameter | undefined {
   const resolved = resolveObject(document, value)
-  if (!resolved || typeof resolved.name !== 'string' || typeof resolved.in !== 'string' || !parameterLocations.has(resolved.in)) return undefined
+  if (
+    !resolved ||
+    typeof resolved.name !== 'string' ||
+    typeof resolved.in !== 'string' ||
+    !parameterLocations.has(resolved.in)
+  )
+    return undefined
 
   const parameter = resolved as unknown as ApiParameter
   return {
     ...parameter,
     required: parameter.in === 'path' || parameter.required,
     schema: parameter.schema ? resolveSchema(document, parameter.schema) : undefined,
-    example: parameter.example !== undefined ? parameter.example : firstExample(document, parameter.examples),
+    example:
+      parameter.example !== undefined
+        ? parameter.example
+        : firstExample(document, parameter.examples),
   }
 }
 
@@ -246,7 +272,12 @@ export function getOperations(document: OpenApiDocument): ApiOperation[] {
       for (const match of path.matchAll(/\{([^{}]+)\}/g)) {
         const name = match[1]
         if (name && !parameters.has(`path:${name}`)) {
-          parameters.set(`path:${name}`, { name, in: 'path', required: true, schema: { type: 'string' } })
+          parameters.set(`path:${name}`, {
+            name,
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+          })
         }
       }
 
@@ -257,7 +288,8 @@ export function getOperations(document: OpenApiDocument): ApiOperation[] {
       }
 
       const body = resolveObject(document, operation.requestBody)
-      const requestBody = body && isRecord(body.content) ? body as unknown as ApiRequestBody : undefined
+      const requestBody =
+        body && isRecord(body.content) ? (body as unknown as ApiRequestBody) : undefined
       operations.push({
         id: operation.operationId || `${method}:${path}`,
         method: method.toUpperCase() as Uppercase<HttpMethod>,
@@ -275,7 +307,12 @@ export function getOperations(document: OpenApiDocument): ApiOperation[] {
   return operations
 }
 
-function exampleForSchema(document: OpenApiDocument, input: ApiSchema, depth: number, references: Set<string>): unknown {
+function exampleForSchema(
+  document: OpenApiDocument,
+  input: ApiSchema,
+  depth: number,
+  references: Set<string>,
+): unknown {
   if (depth > 8) return null
   const schema = resolveSchema(document, input)
   if (schema.example !== undefined) return schema.example
@@ -291,7 +328,8 @@ function exampleForSchema(document: OpenApiDocument, input: ApiSchema, depth: nu
 
   const alternatives = schema.oneOf ?? schema.anyOf
   if (alternatives?.length) {
-    const choice = alternatives.find(item => resolveSchema(document, item).type !== 'null') ?? alternatives[0]
+    const choice =
+      alternatives.find((item) => resolveSchema(document, item).type !== 'null') ?? alternatives[0]
     if (choice) return childExample(choice)
   }
 
@@ -302,15 +340,25 @@ function exampleForSchema(document: OpenApiDocument, input: ApiSchema, depth: nu
   }
 
   const types = Array.isArray(schema.type) ? schema.type : schema.type ? [schema.type] : []
-  const type = types.find(value => value !== 'null') ?? types[0]
+  const type = types.find((value) => value !== 'null') ?? types[0]
   if (type === 'object' || schema.properties || schema.additionalProperties !== undefined) {
     const object: Record<string, unknown> = isRecord(combined) ? { ...combined } : {}
     for (const [name, property] of Object.entries(schema.properties ?? {})) {
-      Object.defineProperty(object, name, { value: childExample(property), enumerable: true, configurable: true, writable: true })
+      Object.defineProperty(object, name, {
+        value: childExample(property),
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      })
     }
     for (const name of schema.required ?? []) {
       if (!Object.prototype.hasOwnProperty.call(object, name)) {
-        Object.defineProperty(object, name, { value: null, enumerable: true, configurable: true, writable: true })
+        Object.defineProperty(object, name, {
+          value: null,
+          enumerable: true,
+          configurable: true,
+          writable: true,
+        })
       }
     }
     if (!Object.keys(object).length && isRecord(schema.additionalProperties)) {
@@ -328,23 +376,25 @@ function exampleForSchema(document: OpenApiDocument, input: ApiSchema, depth: nu
     if (typeof schema.exclusiveMinimum === 'number') value = schema.exclusiveMinimum + 1
     else if (schema.exclusiveMinimum === true) value += 1
     if (schema.maximum !== undefined) value = Math.min(value, schema.maximum)
-    if (typeof schema.exclusiveMaximum === 'number') value = Math.min(value, schema.exclusiveMaximum - 1)
-    else if (schema.exclusiveMaximum === true && schema.maximum !== undefined) value = Math.min(value, schema.maximum - 1)
+    if (typeof schema.exclusiveMaximum === 'number')
+      value = Math.min(value, schema.exclusiveMaximum - 1)
+    else if (schema.exclusiveMaximum === true && schema.maximum !== undefined)
+      value = Math.min(value, schema.maximum - 1)
     return type === 'integer' ? Math.ceil(value) : value
   }
   if (type === 'boolean') return false
   if (type === 'null') return null
   if (type === 'string') {
     const formats: Record<string, string> = {
-      'date': '2026-01-01',
+      date: '2026-01-01',
       'date-time': '2026-01-01T00:00:00Z',
-      'uri': 'https://example.com',
-      'url': 'https://example.com',
-      'email': 'user@example.com',
-      'uuid': '00000000-0000-4000-8000-000000000000',
-      'hostname': 'example.com',
-      'ipv4': '127.0.0.1',
-      'ipv6': '::1',
+      uri: 'https://example.com',
+      url: 'https://example.com',
+      email: 'user@example.com',
+      uuid: '00000000-0000-4000-8000-000000000000',
+      hostname: 'example.com',
+      ipv4: '127.0.0.1',
+      ipv6: '::1',
     }
     return (schema.format && formats[schema.format]) || 'string'
   }
@@ -363,11 +413,12 @@ export function mediaExample(document: OpenApiDocument, media: ApiMediaType): un
 }
 
 export function parameterValue(parameter: ApiParameter): string {
-  const value = parameter.example !== undefined
-    ? parameter.example
-    : parameter.schema?.example !== undefined
-      ? parameter.schema.example
-      : parameter.schema?.default
+  const value =
+    parameter.example !== undefined
+      ? parameter.example
+      : parameter.schema?.example !== undefined
+        ? parameter.schema.example
+        : parameter.schema?.default
   if (value === undefined || value === null) return ''
   if (typeof value === 'object') return JSON.stringify(value) ?? ''
   return String(value)
@@ -377,21 +428,28 @@ function describeSchema(schema: ApiSchema, depth: number): string {
   if (depth > 8) return '…'
   let label: string
   if (schema.oneOf?.length || schema.anyOf?.length) {
-    label = [...new Set((schema.oneOf ?? schema.anyOf ?? []).map(item => describeSchema(item, depth + 1)))].join(' | ')
+    label = [
+      ...new Set(
+        (schema.oneOf ?? schema.anyOf ?? []).map((item) => describeSchema(item, depth + 1)),
+      ),
+    ].join(' | ')
   } else if (schema.allOf?.length) {
-    label = [...new Set(schema.allOf.map(item => describeSchema(item, depth + 1)))].join(' & ')
+    label = [...new Set(schema.allOf.map((item) => describeSchema(item, depth + 1)))].join(' & ')
   } else {
     const types = Array.isArray(schema.type) ? schema.type : schema.type ? [schema.type] : []
     if (!types.length) {
       if (schema.properties || schema.additionalProperties !== undefined) types.push('object')
       else if (schema.items) types.push('array')
     }
-    label = types.map(type => {
-      if (type !== 'array' || !schema.items) return type
-      const itemType = describeSchema(schema.items, depth + 1)
-      return `${/[|&]/.test(itemType) ? `(${itemType})` : itemType}[]`
-    }).join(' | ')
-    if (!label) label = schema.$ref?.split('/').pop()?.replace(/~1/g, '/').replace(/~0/g, '~') || 'unknown'
+    label = types
+      .map((type) => {
+        if (type !== 'array' || !schema.items) return type
+        const itemType = describeSchema(schema.items, depth + 1)
+        return `${/[|&]/.test(itemType) ? `(${itemType})` : itemType}[]`
+      })
+      .join(' | ')
+    if (!label)
+      label = schema.$ref?.split('/').pop()?.replace(/~1/g, '/').replace(/~0/g, '~') || 'unknown'
   }
   if (schema.nullable && !label.split(' | ').includes('null')) label += ' | null'
   return label

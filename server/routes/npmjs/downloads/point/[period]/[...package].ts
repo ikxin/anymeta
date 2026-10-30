@@ -6,27 +6,32 @@ defineRouteMeta({
     operationId: 'getNpmjsDownloadsPoint',
     tags: ['npmjs Downloads'],
     summary: 'Get package download counts',
-    description: 'Returns the original npm download counts for a period. Supports single scoped packages and comma-separated unscoped package names.',
+    description:
+      'Returns the original npm download counts for a period. Supports single scoped packages and comma-separated unscoped package names.',
     'x-i18n': {
       'zh-CN': {
         tags: ['npmjs 下载统计'],
         summary: '获取包下载量',
-        description: '返回指定周期的 npm 原始下载统计，支持单个作用域包，以及用逗号分隔的多个普通包名。',
+        description:
+          '返回指定周期的 npm 原始下载统计，支持单个作用域包，以及用逗号分隔的多个普通包名。',
       },
       'zh-TW': {
         tags: ['npmjs 下載統計'],
         summary: '取得套件下載量',
-        description: '傳回指定期間的 npm 原始下載統計，支援單個範圍套件，以及用逗號分隔的多個一般套件名稱。',
+        description:
+          '傳回指定期間的 npm 原始下載統計，支援單個範圍套件，以及用逗號分隔的多個一般套件名稱。',
       },
       ja: {
         tags: ['npmjs ダウンロード統計'],
         summary: 'パッケージのダウンロード数を取得',
-        description: '指定期間の npm ダウンロード統計をそのまま返します。単一のスコープ付きパッケージと、カンマ区切りの通常の名前に対応します。',
+        description:
+          '指定期間の npm ダウンロード統計をそのまま返します。単一のスコープ付きパッケージと、カンマ区切りの通常の名前に対応します。',
       },
       ko: {
         tags: ['npmjs 다운로드 통계'],
         summary: '패키지 다운로드 수 조회',
-        description: '지정한 기간의 npm 원본 다운로드 통계를 반환합니다. 단일 범위 패키지와 쉼표로 구분한 일반 이름을 지원합니다.',
+        description:
+          '지정한 기간의 npm 원본 다운로드 통계를 반환합니다. 단일 범위 패키지와 쉼표로 구분한 일반 이름을 지원합니다.',
       },
     },
     externalDocs: { url: 'https://github.com/npm/registry/blob/main/docs/download-counts.md' },
@@ -36,12 +41,25 @@ defineRouteMeta({
         name: 'period',
         in: 'path',
         required: true,
-        description: 'last-day, last-week, last-month, last-year, YYYY-MM-DD, or YYYY-MM-DD:YYYY-MM-DD.',
+        description:
+          'last-day, last-week, last-month, last-year, YYYY-MM-DD, or YYYY-MM-DD:YYYY-MM-DD.',
         'x-i18n': {
-          'zh-CN': { description: '支持 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。' },
-          'zh-TW': { description: '支援 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。' },
-          ja: { description: 'last-day、last-week、last-month、last-year、YYYY-MM-DD または YYYY-MM-DD:YYYY-MM-DD を指定します。' },
-          ko: { description: 'last-day, last-week, last-month, last-year, YYYY-MM-DD 또는 YYYY-MM-DD:YYYY-MM-DD를 지원합니다.' },
+          'zh-CN': {
+            description:
+              '支持 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。',
+          },
+          'zh-TW': {
+            description:
+              '支援 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。',
+          },
+          ja: {
+            description:
+              'last-day、last-week、last-month、last-year、YYYY-MM-DD または YYYY-MM-DD:YYYY-MM-DD を指定します。',
+          },
+          ko: {
+            description:
+              'last-day, last-week, last-month, last-year, YYYY-MM-DD 또는 YYYY-MM-DD:YYYY-MM-DD를 지원합니다.',
+          },
         },
         schema: { type: 'string' },
         example: 'last-month',
@@ -50,12 +68,23 @@ defineRouteMeta({
         name: 'package',
         in: 'path',
         required: true,
-        description: 'A package name, such as nuxt or @nuxt/kit, or comma-separated unscoped names such as nuxt,vue.',
+        description:
+          'A package name, such as nuxt or @nuxt/kit, or comma-separated unscoped names such as nuxt,vue.',
         'x-i18n': {
-          'zh-CN': { description: '包名，例如 nuxt、@nuxt/kit，或用逗号分隔的普通包名，例如 nuxt,vue。' },
-          'zh-TW': { description: '套件名稱，例如 nuxt、@nuxt/kit，或用逗號分隔的一般套件名稱，例如 nuxt,vue。' },
-          ja: { description: 'nuxt、@nuxt/kit などの名前、または nuxt,vue のようなカンマ区切りの通常の名前。' },
-          ko: { description: 'nuxt, @nuxt/kit 등의 이름 또는 nuxt,vue처럼 쉼표로 구분한 일반 이름.' },
+          'zh-CN': {
+            description: '包名，例如 nuxt、@nuxt/kit，或用逗号分隔的普通包名，例如 nuxt,vue。',
+          },
+          'zh-TW': {
+            description:
+              '套件名稱，例如 nuxt、@nuxt/kit，或用逗號分隔的一般套件名稱，例如 nuxt,vue。',
+          },
+          ja: {
+            description:
+              'nuxt、@nuxt/kit などの名前、または nuxt,vue のようなカンマ区切りの通常の名前。',
+          },
+          ko: {
+            description: 'nuxt, @nuxt/kit 등의 이름 또는 nuxt,vue처럼 쉼표로 구분한 일반 이름.',
+          },
         },
         schema: { type: 'string' },
         example: 'nuxt',
@@ -80,10 +109,7 @@ defineRouteMeta({
                 {
                   type: 'object',
                   additionalProperties: {
-                    anyOf: [
-                      { $ref: '#/components/schemas/NpmjsDownloadCount' },
-                      { type: 'null' },
-                    ],
+                    anyOf: [{ $ref: '#/components/schemas/NpmjsDownloadCount' }, { type: 'null' }],
                   },
                 },
               ],
@@ -147,6 +173,6 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   return proxyNpmjsRequest(event, getNpmjsDownloadsPointPath(event))
 })

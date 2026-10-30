@@ -47,12 +47,17 @@ export async function proxyNpmjsRequest(event: H3Event, path: string) {
 
   let response: Response
   try {
-    response = await cachedNpmjsRequest(event, JSON.stringify([url.href, headers.get('accept')]), () => fetch(url, {
-      method,
-      headers,
-      redirect: 'manual',
-      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT),
-    }))
+    response = await cachedNpmjsRequest(
+      event,
+      JSON.stringify([url.href, headers.get('accept')]),
+      () =>
+        fetch(url, {
+          method,
+          headers,
+          redirect: 'manual',
+          signal: AbortSignal.timeout(UPSTREAM_TIMEOUT),
+        }),
+    )
   } catch (error) {
     throw createError({ statusCode: 502, message: '无法连接 npmjs 上游接口。', cause: error })
   }
@@ -62,23 +67,37 @@ export async function proxyNpmjsRequest(event: H3Event, path: string) {
     if (FORWARDED_RESPONSE_HEADERS.has(name.toLowerCase())) responseHeaders.set(name, value)
   }
   const mustNotHaveBody =
-    method === 'HEAD' || response.status === 204 || response.status === 205 || response.status === 304
-  return sendWebResponse(event, new Response(mustNotHaveBody ? null : response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: responseHeaders,
-  }))
+    method === 'HEAD' ||
+    response.status === 204 ||
+    response.status === 205 ||
+    response.status === 304
+  return sendWebResponse(
+    event,
+    new Response(mustNotHaveBody ? null : response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: responseHeaders,
+    }),
+  )
 }
 
 export function getNpmjsDownloadsPointPath(event: H3Event) {
   const period = readRouteParam(event, 'period')
-  if (!period || period.length > 100 || /[\\/\u0000-\u001f\u007f]/.test(period) || period === '.' || period === '..') {
+  if (
+    !period ||
+    period.length > 100 ||
+    /[\\/\u0000-\u001f\u007f]/.test(period) ||
+    period === '.' ||
+    period === '..'
+  ) {
     throw createError({ statusCode: 400, message: '下载统计周期无效。' })
   }
   const packages = readRouteParam(event, 'package').split(',')
   for (const name of packages) validatePackageName(name)
 
-  const packagePath = packages.map(name => name.split('/').map(encodeURIComponent).join('/')).join(',')
+  const packagePath = packages
+    .map((name) => name.split('/').map(encodeURIComponent).join('/'))
+    .join(',')
   return `downloads/point/${encodeURIComponent(period)}/${packagePath}`
 }
 
@@ -96,7 +115,7 @@ function validatePackageName(name: string) {
     name.length > 214 ||
     !/^(?:@[^/]+\/)?[^/@]+$/.test(name) ||
     /[\\\u0000-\u001f\u007f]/.test(name) ||
-    name.split('/').some(segment => segment === '.' || segment === '..')
+    name.split('/').some((segment) => segment === '.' || segment === '..')
   ) {
     throw createError({ statusCode: 400, message: 'npm 包名无效。' })
   }

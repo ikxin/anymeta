@@ -1,15 +1,13 @@
 import { defineEventHandler } from 'h3'
-import {
-  getGithubRepositoryPath,
-  proxyGithubRequest,
-} from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
 
 defineRouteMeta({
   openAPI: {
     operationId: 'listGithubRepositoryContributors',
     tags: ['GitHub Repository'],
     summary: 'List repository contributors',
-    description: 'Lists contributors to a public GitHub repository, sorted by contribution count in descending order.',
+    description:
+      'Lists contributors to a public GitHub repository, sorted by contribution count in descending order.',
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 仓库'],
@@ -24,7 +22,8 @@ defineRouteMeta({
       ja: {
         tags: ['GitHub リポジトリ'],
         summary: 'リポジトリのコントリビューターを取得',
-        description: '公開 GitHub リポジトリのコントリビューターを、貢献回数の降順で一覧表示します。',
+        description:
+          '公開 GitHub リポジトリのコントリビューターを、貢献回数の降順で一覧表示します。',
       },
       ko: {
         tags: ['GitHub 저장소'],
@@ -134,7 +133,7 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   return proxyGithubRequest(event, {
     path: getGithubRepositoryPath(event, 'contributors'),
     resource: 'core',

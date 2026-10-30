@@ -10,7 +10,8 @@ defineRouteMeta({
     operationId: 'githubGraphql',
     tags: ['GitHub GraphQL'],
     summary: 'Run a GitHub GraphQL query',
-    description: 'Runs a read-only GraphQL query with a shared GitHub App installation access token.',
+    description:
+      'Runs a read-only GraphQL query with a shared GitHub App installation access token.',
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub GraphQL'],
@@ -25,7 +26,8 @@ defineRouteMeta({
       ja: {
         tags: ['GitHub GraphQL'],
         summary: 'GitHub GraphQL クエリを実行',
-        description: '共有の GitHub App インストールアクセストークンを使って、読み取り専用の GraphQL クエリを実行します。',
+        description:
+          '共有の GitHub App インストールアクセストークンを使って、読み取り専用の GraphQL クエリを実行します。',
       },
       ko: {
         tags: ['GitHub GraphQL'],
@@ -55,11 +57,15 @@ defineRouteMeta({
             properties: {
               query: {
                 type: 'string',
-                description: 'Only query operations are allowed; mutations and subscriptions are rejected.',
+                description:
+                  'Only query operations are allowed; mutations and subscriptions are rejected.',
                 'x-i18n': {
                   'zh-CN': { description: '仅允许查询操作；不允许变更和订阅操作。' },
                   'zh-TW': { description: '僅允許查詢操作；不允許異動和訂閱操作。' },
-                  ja: { description: 'クエリ操作のみ利用できます。ミューテーションとサブスクリプションは拒否されます。' },
+                  ja: {
+                    description:
+                      'クエリ操作のみ利用できます。ミューテーションとサブスクリプションは拒否されます。',
+                  },
                   ko: { description: '쿼리 작업만 허용됩니다. 뮤테이션과 구독은 거부됩니다.' },
                 },
               },
@@ -73,7 +79,8 @@ defineRouteMeta({
             },
           },
           example: {
-            query: 'query Repository($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { name description stargazerCount forkCount url } }',
+            query:
+              'query Repository($owner: String!, $name: String!) { repository(owner: $owner, name: $name) { name description stargazerCount forkCount url } }',
             variables: {
               owner: 'unjs',
               name: 'ungh',
@@ -118,7 +125,10 @@ defineRouteMeta({
         'x-i18n': {
           'zh-CN': { description: '请求体或 GraphQL 查询违反了匿名代理的限制。' },
           'zh-TW': { description: '請求主體或 GraphQL 查詢違反了匿名代理的限制。' },
-          ja: { description: 'リクエストボディまたは GraphQL クエリが匿名プロキシの制限に違反しています。' },
+          ja: {
+            description:
+              'リクエストボディまたは GraphQL クエリが匿名プロキシの制限に違反しています。',
+          },
           ko: { description: '요청 본문 또는 GraphQL 쿼리가 익명 프록시 제한을 위반했습니다.' },
         },
         content: {
@@ -158,7 +168,9 @@ defineRouteMeta({
               'zh-CN': { description: '仓库所有者的登录名，不区分大小写。' },
               'zh-TW': { description: '儲存庫擁有者的登入名稱，不區分大小寫。' },
               ja: { description: 'リポジトリ所有者のログイン名。大文字と小文字は区別されません。' },
-              ko: { description: '저장소 소유자의 로그인 이름입니다. 대소문자를 구분하지 않습니다.' },
+              ko: {
+                description: '저장소 소유자의 로그인 이름입니다. 대소문자를 구분하지 않습니다.',
+              },
             },
             schema: {
               type: 'string',
@@ -169,12 +181,19 @@ defineRouteMeta({
             name: 'repo',
             in: 'path',
             required: true,
-            description: 'The repository name without the .git suffix. The value is case-insensitive.',
+            description:
+              'The repository name without the .git suffix. The value is case-insensitive.',
             'x-i18n': {
               'zh-CN': { description: '不含 .git 后缀的仓库名称，不区分大小写。' },
               'zh-TW': { description: '不含 .git 後綴的儲存庫名稱，不區分大小寫。' },
-              ja: { description: '.git サフィックスを含まないリポジトリ名。大文字と小文字は区別されません。' },
-              ko: { description: '.git 접미사를 제외한 저장소 이름입니다. 대소문자를 구분하지 않습니다.' },
+              ja: {
+                description:
+                  '.git サフィックスを含まないリポジトリ名。大文字と小文字は区別されません。',
+              },
+              ko: {
+                description:
+                  '.git 접미사를 제외한 저장소 이름입니다. 대소문자를 구분하지 않습니다.',
+              },
             },
             schema: {
               type: 'string',
@@ -276,7 +295,7 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(async event => {
+export default defineEventHandler(async (event) => {
   let body: string
   try {
     body = validateGithubGraphqlBody(await readRawBody(event, 'utf8'))

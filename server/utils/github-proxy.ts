@@ -81,41 +81,48 @@ export async function proxyGithubRequest(event: H3Event, request: GithubProxyReq
   const upstreamUrl = new URL(`/${request.path}`, GITHUB_API_ORIGIN)
   upstreamUrl.search = requestUrl.search
 
-  const response = await cachedGithubRequest(event, JSON.stringify([
-    config.githubAppId,
-    upstreamUrl.href,
-    request.accept || 'application/vnd.github+json',
-  ]), async () => {
-    for (let attempt = 1; attempt <= MAX_AUTH_ATTEMPTS; attempt += 1) {
-      const lease = await pool.acquire(request.resource)
+  const response = await cachedGithubRequest(
+    event,
+    JSON.stringify([
+      config.githubAppId,
+      upstreamUrl.href,
+      request.accept || 'application/vnd.github+json',
+    ]),
+    async () => {
+      for (let attempt = 1; attempt <= MAX_AUTH_ATTEMPTS; attempt += 1) {
+        const lease = await pool.acquire(request.resource)
 
-      let upstreamResponse: Response
-      try {
-        upstreamResponse = await fetchWithTimeout(upstreamUrl, {
-          method,
-          headers: createUpstreamHeaders(event, lease.token, request.contentType, request.accept),
-          body: request.body,
-        })
-      } catch (error) {
-        pool.release(lease)
-        throw createError({
-          statusCode: 502,
-          message: 'Unable to connect to the GitHub upstream API.',
-          cause: error,
-        })
+        let upstreamResponse: Response
+        try {
+          upstreamResponse = await fetchWithTimeout(upstreamUrl, {
+            method,
+            headers: createUpstreamHeaders(event, lease.token, request.contentType, request.accept),
+            body: request.body,
+          })
+        } catch (error) {
+          pool.release(lease)
+          throw createError({
+            statusCode: 502,
+            message: 'Unable to connect to the GitHub upstream API.',
+            cause: error,
+          })
+        }
+
+        pool.release(lease, upstreamResponse)
+        if (upstreamResponse.status === 401 && attempt < MAX_AUTH_ATTEMPTS) {
+          await upstreamResponse.body?.cancel()
+          continue
+        }
+
+        return upstreamResponse
       }
 
-      pool.release(lease, upstreamResponse)
-      if (upstreamResponse.status === 401 && attempt < MAX_AUTH_ATTEMPTS) {
-        await upstreamResponse.body?.cancel()
-        continue
-      }
-
-      return upstreamResponse
-    }
-
-    throw createError({ statusCode: 502, message: 'GitHub upstream authentication failed repeatedly.' })
-  }).catch(error => throwTokenPoolError(event, error))
+      throw createError({
+        statusCode: 502,
+        message: 'GitHub upstream authentication failed repeatedly.',
+      })
+    },
+  ).catch((error) => throwTokenPoolError(event, error))
   return sendWebResponse(event, createClientResponse(response, method))
 }
 
@@ -131,7 +138,10 @@ export function getGithubOrganizationPath(event: H3Event, suffix?: string) {
 }
 
 function readPathSegment(event: H3Event, name: string, label: string) {
-  const decoded = decodeRouteParam(getRouterParam(event, name), `${label} contains invalid encoding.`)
+  const decoded = decodeRouteParam(
+    getRouterParam(event, name),
+    `${label} contains invalid encoding.`,
+  )
   if (
     !decoded ||
     decoded.length > 100 ||
@@ -154,7 +164,12 @@ function decodeRouteParam(value: string | undefined, errorMessage: string) {
   }
 }
 
-function createUpstreamHeaders(event: H3Event, token: string, contentType?: string, accept?: string) {
+function createUpstreamHeaders(
+  event: H3Event,
+  token: string,
+  contentType?: string,
+  accept?: string,
+) {
   const headers = new Headers({
     Accept: accept || 'application/vnd.github+json',
     Authorization: `Bearer ${token}`,
@@ -227,7 +242,10 @@ function createClientResponse(response: Response, method: string) {
   }
 
   const mustNotHaveBody =
-    method === 'HEAD' || response.status === 204 || response.status === 205 || response.status === 304
+    method === 'HEAD' ||
+    response.status === 204 ||
+    response.status === 205 ||
+    response.status === 304
   return new Response(mustNotHaveBody ? null : response.body, {
     status: response.status,
     statusText: response.statusText,

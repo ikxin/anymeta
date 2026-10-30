@@ -6,7 +6,8 @@ defineRouteMeta({
     operationId: 'getGithubLatestRelease',
     tags: ['GitHub Repository'],
     summary: 'Get the latest release',
-    description: 'Returns the original latest published full release from GitHub, excluding drafts and prereleases.',
+    description:
+      'Returns the original latest published full release from GitHub, excluding drafts and prereleases.',
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 仓库'],
@@ -77,7 +78,7 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   return proxyGithubRequest(event, {
     path: getGithubRepositoryPath(event, 'releases/latest'),
     resource: 'core',

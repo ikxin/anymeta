@@ -150,7 +150,11 @@ export class GithubAppTokenPool {
     const now = Date.now()
     if (this.globalCooldownUntil > now) {
       const retryAfter = Math.max(1, Math.ceil((this.globalCooldownUntil - now) / 1000))
-      throw new GithubTokenPoolError('GitHub secondary rate limiting is in effect; try again later.', 429, retryAfter)
+      throw new GithubTokenPoolError(
+        'GitHub secondary rate limiting is in effect; try again later.',
+        429,
+        retryAfter,
+      )
     }
 
     await this.ensureReady()
@@ -163,9 +167,7 @@ export class GithubAppTokenPool {
 
     if (!installation?.token) {
       const resetAt = this.findSoonestReset(resource)
-      const retryAfter = resetAt
-        ? Math.max(1, Math.ceil((resetAt - Date.now()) / 1000))
-        : 60
+      const retryAfter = resetAt ? Math.max(1, Math.ceil((resetAt - Date.now()) / 1000)) : 60
       throw new GithubTokenPoolError(
         'No GitHub App installation access token is currently available; wait for the rate limit to reset or install another app instance.',
         429,
@@ -243,13 +245,12 @@ export class GithubAppTokenPool {
   private async warmTokens() {
     const now = Date.now()
     const expiring = [...this.installations.values()].filter(
-      installation =>
-        installation.token && installation.expiresAt <= now + TOKEN_REFRESH_SKEW,
+      (installation) => installation.token && installation.expiresAt <= now + TOKEN_REFRESH_SKEW,
     )
 
     let replacementCount = 0
     if (expiring.length > 0 && this.countActiveTokens() < MAX_ACTIVE_TOKENS) {
-      const expiringIds = new Set(expiring.map(installation => installation.id))
+      const expiringIds = new Set(expiring.map((installation) => installation.id))
       try {
         const replacements = await this.activateInstallations(expiring.length, expiringIds)
         replacementCount = Math.min(replacements.length, expiring.length)
@@ -264,17 +265,19 @@ export class GithubAppTokenPool {
       this.endBatchFor(installation.id)
     }
     await Promise.allSettled(
-      expiring.slice(replacementCount).map(installation => this.refreshToken(installation)),
+      expiring.slice(replacementCount).map((installation) => this.refreshToken(installation)),
     )
 
-    const usableCount = [...this.installations.values()].filter(installation =>
+    const usableCount = [...this.installations.values()].filter((installation) =>
       this.hasUsableToken(installation, now),
     ).length
     if (usableCount < MIN_WARM_TOKENS) {
       await this.activateInstallations(MIN_WARM_TOKENS - usableCount)
     }
 
-    if (![...this.installations.values()].some(installation => this.hasUsableToken(installation))) {
+    if (
+      ![...this.installations.values()].some((installation) => this.hasUsableToken(installation))
+    ) {
       throw new GithubTokenPoolError(
         'The GitHub App has no available installations. Keep only the metadata permission and select exactly one public repository.',
       )
@@ -310,28 +313,37 @@ export class GithubAppTokenPool {
         { headers: createAppHeaders(jwt) },
       )
       if (!response.ok) {
-        throw await createGithubApiError(response, 'Unable to read the GitHub App installation list')
+        throw await createGithubApiError(
+          response,
+          'Unable to read the GitHub App installation list',
+        )
       }
 
       const installations = (await response.json()) as GithubInstallation[]
       if (!Array.isArray(installations)) {
-        throw new GithubTokenPoolError('GitHub returned an unrecognized app installation list.', 502)
+        throw new GithubTokenPoolError(
+          'GitHub returned an unrecognized app installation list.',
+          502,
+        )
       }
       discovered.push(...installations)
       if (installations.length < INSTALLATIONS_PER_PAGE) {
         break
       }
       if (page === MAX_INSTALLATION_PAGES) {
-        throw new GithubTokenPoolError('The number of GitHub App installations exceeds the safe read limit for this service.', 503)
+        throw new GithubTokenPoolError(
+          'The number of GitHub App installations exceeds the safe read limit for this service.',
+          503,
+        )
       }
     }
 
     const safeIds = new Set(
       discovered
-        .filter(installation => !installation.suspended_at)
-        .filter(installation => hasOnlyMetadataReadPermission(installation.permissions))
-        .filter(installation => installation.repository_selection === 'selected')
-        .map(installation => installation.id),
+        .filter((installation) => !installation.suspended_at)
+        .filter((installation) => hasOnlyMetadataReadPermission(installation.permissions))
+        .filter((installation) => installation.repository_selection === 'selected')
+        .map((installation) => installation.id),
     )
 
     for (const id of this.installations.keys()) {
@@ -361,30 +373,32 @@ export class GithubAppTokenPool {
 
     const now = Date.now()
     const candidates = [...this.installations.values()]
-      .filter(installation => !this.hasUsableToken(installation, now))
-      .filter(installation => !excludedIds.has(installation.id))
+      .filter((installation) => !this.hasUsableToken(installation, now))
+      .filter((installation) => !excludedIds.has(installation.id))
       .sort(
         (first, second) =>
-          first.lastIssuedAt - second.lastIssuedAt ||
-          first.selectionOrder - second.selectionOrder,
+          first.lastIssuedAt - second.lastIssuedAt || first.selectionOrder - second.selectionOrder,
       )
       .slice(0, Math.min(count, MAX_ACTIVE_TOKENS - this.countActiveTokens()))
 
     const results = await Promise.allSettled(
-      candidates.map(installation => this.refreshToken(installation)),
+      candidates.map((installation) => this.refreshToken(installation)),
     )
-    if (candidates.length > 0 && results.every(result => result.status === 'rejected')) {
+    if (candidates.length > 0 && results.every((result) => result.status === 'rejected')) {
       const firstFailure = results.find(
         (result): result is PromiseRejectedResult => result.status === 'rejected',
       )?.reason
       if (firstFailure instanceof GithubTokenPoolError) {
         throw firstFailure
       }
-      throw new GithubTokenPoolError('Unable to generate a GitHub App installation access token.', 503)
+      throw new GithubTokenPoolError(
+        'Unable to generate a GitHub App installation access token.',
+        503,
+      )
     }
     return candidates
       .filter((_, index) => results[index]?.status === 'fulfilled')
-      .map(installation => installation.id)
+      .map((installation) => installation.id)
   }
 
   private refreshToken(installation: InstallationState) {
@@ -422,15 +436,15 @@ export class GithubAppTokenPool {
 
     const bootstrap = (await bootstrapResponse.json()) as GithubInstallationTokenResponse
     if (!bootstrap.token) {
-      throw new GithubTokenPoolError(`Installation ${installation.id} returned a verification token with an invalid format.`, 502)
+      throw new GithubTokenPoolError(
+        `Installation ${installation.id} returned a verification token with an invalid format.`,
+        502,
+      )
     }
 
     let unacceptedToken: string | undefined
     try {
-      const publicRepository = await getSinglePublicRepository(
-        bootstrap.token,
-        installation.id,
-      )
+      const publicRepository = await getSinglePublicRepository(bootstrap.token, installation.id)
       if (!publicRepository) {
         throw new GithubTokenPoolError(
           `Installation ${installation.id} must select exactly one public repository.`,
@@ -453,7 +467,10 @@ export class GithubAppTokenPool {
         },
       )
       if (!response.ok) {
-        throw await createGithubApiError(response, `Unable to generate a token for installation ${installation.id}`)
+        throw await createGithubApiError(
+          response,
+          `Unable to generate a token for installation ${installation.id}`,
+        )
       }
 
       const result = (await response.json()) as GithubInstallationTokenResponse
@@ -475,7 +492,10 @@ export class GithubAppTokenPool {
 
       const expiresAt = Date.parse(result.expires_at)
       if (!Number.isFinite(expiresAt)) {
-        throw new GithubTokenPoolError(`Installation ${installation.id} returned an invalid token expiration time.`, 502)
+        throw new GithubTokenPoolError(
+          `Installation ${installation.id} returned an invalid token expiration time.`,
+          502,
+        )
       }
 
       installation.token = result.token
@@ -493,16 +513,14 @@ export class GithubAppTokenPool {
   private pickInstallation(resource: GithubRateResource) {
     const now = Date.now()
     const active = [...this.installations.values()]
-      .filter(installation => this.hasUsableToken(installation, now))
+      .filter((installation) => this.hasUsableToken(installation, now))
       .sort((first, second) => first.id - second.id)
     if (active.length === 0) {
       return undefined
     }
 
     const batch = this.batches[resource]
-    const current = batch.installationId
-      ? this.installations.get(batch.installationId)
-      : undefined
+    const current = batch.installationId ? this.installations.get(batch.installationId) : undefined
     if (current && batch.remaining > 0 && this.isResourceUsable(current, resource, now)) {
       batch.remaining -= 1
       return current
@@ -597,15 +615,15 @@ export class GithubAppTokenPool {
   private findSoonestReset(resource: GithubRateResource) {
     const now = Date.now()
     const resets = [...this.installations.values()]
-      .map(installation => installation.rates[resource])
-      .map(state => state.cooldownUntil || state.resetAt)
+      .map((installation) => installation.rates[resource])
+      .map((state) => state.cooldownUntil || state.resetAt)
       .filter((value): value is number => Boolean(value && value > now))
     return resets.length > 0 ? Math.min(...resets) : undefined
   }
 
   private countActiveTokens() {
     const now = Date.now()
-    return [...this.installations.values()].filter(installation =>
+    return [...this.installations.values()].filter((installation) =>
       this.hasUsableToken(installation, now),
     ).length
   }
@@ -796,8 +814,7 @@ function pemToPkcs8(pem: string) {
 function wrapPkcs1AsPkcs8(pkcs1: Uint8Array) {
   const version = new Uint8Array([0x02, 0x01, 0x00])
   const rsaAlgorithmIdentifier = new Uint8Array([
-    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05,
-    0x00,
+    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00,
   ])
   const privateKey = asn1Wrap(0x04, pkcs1)
   const pkcs8 = asn1Wrap(0x30, concatBytes(version, rsaAlgorithmIdentifier, privateKey))

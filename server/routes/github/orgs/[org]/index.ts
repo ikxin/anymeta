@@ -6,7 +6,8 @@ defineRouteMeta({
     operationId: 'getGithubOrganization',
     tags: ['GitHub Organization'],
     summary: 'Get an organization',
-    description: 'Returns the original public organization metadata from GitHub, including its follower count.',
+    description:
+      'Returns the original public organization metadata from GitHub, including its follower count.',
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 组织'],
@@ -117,7 +118,7 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   return proxyGithubRequest(event, {
     path: getGithubOrganizationPath(event),
     resource: 'core',

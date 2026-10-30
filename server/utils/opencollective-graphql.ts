@@ -104,7 +104,9 @@ export function validateOpenCollectiveGraphqlBody(rawBody: string | undefined) {
     throw new OpenCollectiveGraphqlValidationError('The GraphQL request body must be valid JSON.')
   }
   if (!isRecord(payload) || typeof payload.query !== 'string' || !payload.query.trim()) {
-    throw new OpenCollectiveGraphqlValidationError('The GraphQL request body must contain a non-empty query field.')
+    throw new OpenCollectiveGraphqlValidationError(
+      'The GraphQL request body must contain a non-empty query field.',
+    )
   }
   if (
     payload.operationName !== undefined &&
@@ -160,11 +162,15 @@ function inspectDocument(payload: OpenCollectiveGraphqlPayload) {
       fragments.set(definition.name.value, definition)
       continue
     }
-    throw new OpenCollectiveGraphqlValidationError('The request contains a non-executable GraphQL definition.')
+    throw new OpenCollectiveGraphqlValidationError(
+      'The request contains a non-executable GraphQL definition.',
+    )
   }
 
   if (operations.length === 0) {
-    throw new OpenCollectiveGraphqlValidationError('The GraphQL request must contain a query operation.')
+    throw new OpenCollectiveGraphqlValidationError(
+      'The GraphQL request must contain a query operation.',
+    )
   }
 
   const operation = selectOperation(operations, payload.operationName)
@@ -187,7 +193,7 @@ function selectOperation(
   operationName: string | null | undefined,
 ) {
   if (operationName) {
-    const selected = operations.find(operation => operation.name?.value === operationName)
+    const selected = operations.find((operation) => operation.name?.value === operationName)
     if (!selected) {
       throw new OpenCollectiveGraphqlValidationError(
         `No GraphQL query named ${operationName} was found.`,
@@ -196,7 +202,9 @@ function selectOperation(
     return selected
   }
   if (operations.length !== 1) {
-    throw new OpenCollectiveGraphqlValidationError('operationName is required when multiple queries are provided.')
+    throw new OpenCollectiveGraphqlValidationError(
+      'operationName is required when multiple queries are provided.',
+    )
   }
   return operations[0]!
 }
@@ -298,7 +306,9 @@ function inspectSelectionSet(
       throw new OpenCollectiveGraphqlValidationError(`Fragment ${fragmentName} was not found.`)
     }
     if (activeFragments.has(fragmentName)) {
-      throw new OpenCollectiveGraphqlValidationError(`Fragment ${fragmentName} contains a cyclic reference.`)
+      throw new OpenCollectiveGraphqlValidationError(
+        `Fragment ${fragmentName} contains a cyclic reference.`,
+      )
     }
     if (activeFragments.size >= MAX_FRAGMENT_HOPS) {
       throw new OpenCollectiveGraphqlValidationError(
@@ -379,9 +389,7 @@ function resolveInteger(
   }
 
   const defaultValue = defaults.get(name)
-  return defaultValue
-    ? resolveInteger(defaultValue, variables, defaults, argumentName)
-    : undefined
+  return defaultValue ? resolveInteger(defaultValue, variables, defaults, argumentName) : undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

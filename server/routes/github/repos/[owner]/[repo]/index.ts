@@ -1,8 +1,5 @@
 import { defineEventHandler } from 'h3'
-import {
-  getGithubRepositoryPath,
-  proxyGithubRequest,
-} from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -125,7 +122,7 @@ defineRouteMeta({
   },
 })
 
-export default defineEventHandler(event => {
+export default defineEventHandler((event) => {
   return proxyGithubRequest(event, {
     path: getGithubRepositoryPath(event),
     resource: 'core',

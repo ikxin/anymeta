@@ -1,11 +1,13 @@
 <script setup lang="ts">
-definePageMeta({ key: route => route.path })
+definePageMeta({ key: (route) => route.path })
 
 const route = useRoute()
 const { t } = useI18n()
 const { document, operations } = useApiReference()
 const operationId = typeof route.params.operation === 'string' ? route.params.operation : ''
-const operationIndex = computed(() => operations.value.findIndex(operation => operation.id === operationId))
+const operationIndex = computed(() =>
+  operations.value.findIndex((operation) => operation.id === operationId),
+)
 const operation = computed(() => operations.value[operationIndex.value])
 
 if (!operation.value) {
@@ -19,5 +21,10 @@ useSeoMeta({
 </script>
 
 <template>
-  <ApiOperation v-if="operation && document" :key="operation.id" :operation="operation" :document="document" />
+  <ApiOperation
+    v-if="operation && document"
+    :key="operation.id"
+    :operation="operation"
+    :document="document"
+  />
 </template>

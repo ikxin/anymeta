@@ -43,7 +43,9 @@ export function validateGithubGraphqlBody(rawBody: string | undefined) {
     throw new GithubGraphqlValidationError('The GraphQL request body must be valid JSON.')
   }
   if (!isRecord(payload) || typeof payload.query !== 'string' || !payload.query.trim()) {
-    throw new GithubGraphqlValidationError('The GraphQL request body must contain a non-empty query field.')
+    throw new GithubGraphqlValidationError(
+      'The GraphQL request body must contain a non-empty query field.',
+    )
   }
   if (
     payload.operationName !== undefined &&
@@ -83,19 +85,25 @@ function inspectDocument(payload: GithubGraphqlPayload) {
   for (const definition of document.definitions) {
     if (definition.kind === Kind.OPERATION_DEFINITION) {
       if (definition.operation !== 'query') {
-        throw new GithubGraphqlValidationError('The anonymous proxy allows GraphQL queries only; mutations and subscriptions are not allowed.')
+        throw new GithubGraphqlValidationError(
+          'The anonymous proxy allows GraphQL queries only; mutations and subscriptions are not allowed.',
+        )
       }
       operations.push(definition)
       continue
     }
     if (definition.kind === Kind.FRAGMENT_DEFINITION) {
       if (fragments.has(definition.name.value)) {
-        throw new GithubGraphqlValidationError(`Fragment ${definition.name.value} is defined more than once.`)
+        throw new GithubGraphqlValidationError(
+          `Fragment ${definition.name.value} is defined more than once.`,
+        )
       }
       fragments.set(definition.name.value, definition)
       continue
     }
-    throw new GithubGraphqlValidationError('The request contains a non-executable GraphQL definition.')
+    throw new GithubGraphqlValidationError(
+      'The request contains a non-executable GraphQL definition.',
+    )
   }
 
   if (operations.length === 0) {
@@ -132,14 +140,16 @@ function selectOperation(
   operationName: string | null | undefined,
 ) {
   if (operationName) {
-    const selected = operations.find(operation => operation.name?.value === operationName)
+    const selected = operations.find((operation) => operation.name?.value === operationName)
     if (!selected) {
       throw new GithubGraphqlValidationError(`No GraphQL query named ${operationName} was found.`)
     }
     return selected
   }
   if (operations.length !== 1) {
-    throw new GithubGraphqlValidationError('operationName is required when multiple queries are provided.')
+    throw new GithubGraphqlValidationError(
+      'operationName is required when multiple queries are provided.',
+    )
   }
   return operations[0]!
 }
@@ -212,7 +222,9 @@ function inspectSelectionSet(
       throw new GithubGraphqlValidationError(`Fragment ${fragmentName} was not found.`)
     }
     if (activeFragments.has(fragmentName)) {
-      throw new GithubGraphqlValidationError(`Fragment ${fragmentName} contains a cyclic reference.`)
+      throw new GithubGraphqlValidationError(
+        `Fragment ${fragmentName} contains a cyclic reference.`,
+      )
     }
     if (activeFragments.size >= MAX_FRAGMENT_HOPS) {
       throw new GithubGraphqlValidationError(

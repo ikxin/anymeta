@@ -19,8 +19,15 @@ useSeoMeta({ title: () => `${title.value} · AnyMeta`, robots: 'noindex' })
       <div class="max-w-md text-center">
         <p class="mb-3 font-mono text-sm text-primary">{{ error.statusCode }}</p>
         <h1 class="text-3xl font-semibold tracking-tight text-highlighted">{{ title }}</h1>
-        <p class="mt-4 text-sm leading-7 text-muted">{{ t(notFound ? 'site.pageNotFoundDescription' : 'site.errorDescription') }}</p>
-        <UButton class="mt-6" icon="i-lucide-arrow-left" :label="t('site.backToReference')" @click="clearError({ redirect: localePath('index') })" />
+        <p class="mt-4 text-sm leading-7 text-muted">
+          {{ t(notFound ? 'site.pageNotFoundDescription' : 'site.errorDescription') }}
+        </p>
+        <UButton
+          class="mt-6"
+          icon="i-lucide-arrow-left"
+          :label="t('site.backToReference')"
+          @click="clearError({ redirect: localePath('index') })"
+        />
       </div>
     </main>
   </UApp>

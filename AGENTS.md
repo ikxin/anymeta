@@ -2,38 +2,11 @@
 
 该项目用于代理 GitHub、npmjs、crates.io、PyPI 等平台的公开 API 接口，实现无 Token 访问公开 Meta 元数据。
 
-使用技术栈为 Nuxt、Nitro、Vite 和 Rolldown。
-
-当前项目的灵感来源于 [ungh](https://github.com/unjs/ungh) 仓库，关于 Token 池的关键逻辑实现需要参考 [ungh](https://github.com/unjs/ungh) 的实现。
-
-## 路由设计
-
-当前阶段只需要支持 GitHub 和 npmjs 的部分接口，分别以 /github/{path} 和 /npmjs/{path} 作为 API 接口前缀，再拼接上游 API 的路径。
-
-**GitHub API**
-
-- `https://api.github.com/graphql`
-- `https://api.github.com/orgs/{org}`
-- `https://api.github.com/orgs/{org}/repos`
-- `https://api.github.com/repos/{owner}/{repo}/contributors`
-- `https://api.github.com/repos/{owner}/{repo}/languages`
-- `https://api.github.com/repos/{owner}/{repo}/readme`
-- `https://api.github.com/repos/{owner}/{repo}/releases`
-- `https://api.github.com/repos/{owner}/{repo}/releases/latest`
-- `https://api.github.com/repos/{owner}/{repo}`
-- `https://api.github.com/search/issues`
-
-**npmjs API**
-
-- `https://api.npmjs.org/downloads/point/{period}/{package}`
-- `https://api.npmjs.org/downloads/point/{period}/{package1},{package2},...`
-- `https://api.npmjs.org/downloads/range/{start}:{end}/{package}`
-
 ## 注意事项
 
-- 积极使用当前环境的 MCP 来增强 Agent 能力并且减少大模型幻觉
-- 代码变更完成之后不要主动执行 dev、build、lint、test 等指令
+- 代码变更完成之后不要主动执行开发、构建、测试等指令
 - 所有代码和文件修改都保留在 Git 工作区，永远不要动暂存区里面的代码和文件
+- 尽可能最小改动实现需求，不要新增多余的文档、注释、测试用例
 
 ## 语言约束
 

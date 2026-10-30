@@ -1,8 +1,4 @@
-import {
-  createError,
-  sendWebResponse,
-  type H3Event,
-} from 'h3'
+import { createError, sendWebResponse, type H3Event } from 'h3'
 
 const OPEN_COLLECTIVE_GRAPHQL_URL = 'https://api.opencollective.com/graphql/v2/'
 const UPSTREAM_TIMEOUT = 15_000

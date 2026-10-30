@@ -22,16 +22,20 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="reference-columns">
+  <div class="grid min-w-0 gap-9 xl:grid-cols-2 xl:gap-x-12">
     <header>
-      <h1 class="text-2xl font-semibold leading-8 tracking-tight text-highlighted">{{ document?.info?.title || 'AnyMeta API' }}</h1>
+      <h1 class="text-2xl font-semibold leading-8 tracking-tight text-highlighted">
+        {{ document?.info?.title || 'AnyMeta API' }}
+      </h1>
       <p class="mt-4 text-sm leading-7">{{ t('site.description') }}</p>
     </header>
 
-    <div class="reference-examples min-w-0 space-y-6">
+    <div class="min-w-0 space-y-6 xl:pt-11">
       <section v-for="group in groups" :key="group.tag">
-        <h2 class="reference-heading mb-2">{{ group.tag }}</h2>
-        <div class="reference-panel divide-y divide-default">
+        <h2 class="mb-2 text-[15px] font-semibold leading-6 text-highlighted">{{ group.tag }}</h2>
+        <div
+          class="divide-y divide-default overflow-hidden rounded-md border border-default bg-reference-panel"
+        >
           <NuxtLink
             v-for="operation in group.operations"
             :key="operation.id"
@@ -45,7 +49,13 @@ useSeoMeta({
           </NuxtLink>
         </div>
       </section>
-      <UAlert v-if="!operations.length" color="neutral" variant="subtle" :title="t('site.noEndpointsTitle')" :description="t('site.noEndpointsDescription')" />
+      <UAlert
+        v-if="!operations.length"
+        color="neutral"
+        variant="subtle"
+        :title="t('site.noEndpointsTitle')"
+        :description="t('site.noEndpointsDescription')"
+      />
     </div>
   </div>
 </template>
