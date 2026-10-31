@@ -11,7 +11,7 @@ interface RequestResult {
   contentType: string
 }
 
-export function useApiRequest(operation: ApiOperation, document: OpenApiDocument) {
+export function useRequest(operation: ApiOperation, document: OpenApiDocument) {
   const { t } = useI18n()
   const origin = useRequestURL().origin
   const values = reactive<Record<string, string>>(

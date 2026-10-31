@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ApiOperation, ApiParameter, OpenApiDocument } from '~/utils/openapi'
-import { parameterKey, useApiRequest } from '~/composables/useApiRequest'
+import { parameterKey, useRequest } from '~/composables/useRequest'
 import { schemaType } from '~/utils/openapi'
 
 const props = defineProps<{ operation: ApiOperation; document: OpenApiDocument }>()
@@ -22,7 +22,7 @@ const {
   reset,
   resetBody,
   cancel,
-} = useApiRequest(props.operation, props.document)
+} = useRequest(props.operation, props.document)
 
 const requestOpen = ref(false)
 const requestTab = ref(hasBody ? 'body' : 'parameters')
@@ -83,7 +83,7 @@ function formatBody() {
     class="overflow-hidden rounded-md border border-default bg-reference-panel"
     :aria-label="t('ui.request.codeExamples')"
   >
-    <ApiCodeBlock
+    <CodeBlock
       :code="codeTab === 'curl' ? curl : javascript"
       :label="codeTab === 'curl' ? 'cURL' : 'JavaScript'"
       max-height="24rem"
@@ -91,7 +91,7 @@ function formatBody() {
     >
       <template #label>
         <div class="flex min-w-0 items-center gap-2">
-          <ApiMethodBadge :method="operation.method" class="shrink-0" />
+          <MethodBadge :method="operation.method" class="shrink-0" />
           <span class="truncate font-mono text-[11px] text-muted" :title="operation.path">{{
             operation.path
           }}</span>
@@ -108,7 +108,7 @@ function formatBody() {
           class="w-25 shrink-0"
         />
       </template>
-    </ApiCodeBlock>
+    </CodeBlock>
 
     <div class="flex justify-end border-t border-default px-2 py-1.5">
       <UModal
@@ -136,7 +136,7 @@ function formatBody() {
             <div
               class="flex min-w-0 items-start gap-2 rounded-md border border-default bg-muted/40 px-3 py-2.5"
             >
-              <ApiMethodBadge :method="operation.method" class="mt-0.5 shrink-0" />
+              <MethodBadge :method="operation.method" class="mt-0.5 shrink-0" />
               <span class="break-all font-mono text-xs leading-6">{{ requestUrl }}</span>
             </div>
 
@@ -342,7 +342,7 @@ function formatBody() {
                 size="sm"
                 class="mb-3"
               />
-              <ApiCodeBlock
+              <CodeBlock
                 :code="responseTab === 'body' ? result.body : result.headers"
                 :label="
                   responseTab === 'body' ? result.contentType : t('ui.request.responseHeaders')

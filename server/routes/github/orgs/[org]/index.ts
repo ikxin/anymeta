@@ -3,7 +3,6 @@ import { getGithubOrganizationPath, proxyGithubRequest } from '#server/utils/git
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'getGithubOrganization',
     tags: ['GitHub Organization'],
     summary: 'Get an organization',
     description:

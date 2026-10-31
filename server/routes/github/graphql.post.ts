@@ -7,7 +7,6 @@ import { proxyGithubRequest } from '#server/utils/github-proxy'
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'githubGraphql',
     tags: ['GitHub GraphQL'],
     summary: 'Run a GitHub GraphQL query',
     description:

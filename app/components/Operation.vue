@@ -139,7 +139,7 @@ const externalDocsUrl = computed(() => {
               >{{ t('ui.common.required') }}</span
             >
           </div>
-          <ApiSchemaTree v-if="media.schema" :document="document" :schema="media.schema" />
+          <SchemaTree v-if="media.schema" :document="document" :schema="media.schema" />
         </div>
       </section>
 
@@ -176,7 +176,7 @@ const externalDocsUrl = computed(() => {
                 size="xs"
                 class="mb-2"
               />
-              <ApiSchemaTree
+              <SchemaTree
                 v-if="responseMedia?.schema"
                 :document="document"
                 :schema="responseMedia.schema"
@@ -198,8 +198,8 @@ const externalDocsUrl = computed(() => {
     </div>
 
     <aside class="min-w-0 space-y-3 xl:pt-11" :aria-label="t('ui.operation.explorer')">
-      <ApiRequestPanel :operation="operation" :document="document" />
-      <ApiCodeBlock
+      <RequestPanel :operation="operation" :document="document" />
+      <CodeBlock
         v-if="response"
         :code="
           responseView === 'schema' && responseMedia?.schema
@@ -233,7 +233,7 @@ const externalDocsUrl = computed(() => {
         </template>
         <template v-if="responseView === 'schema'" #default>
           <div class="max-h-[28rem] overflow-auto px-3 py-2">
-            <ApiSchemaTree
+            <SchemaTree
               v-if="responseMedia?.schema"
               :document="document"
               :schema="responseMedia.schema"
@@ -242,7 +242,7 @@ const externalDocsUrl = computed(() => {
           </div>
         </template>
         <template #footer>{{ response.description }}</template>
-      </ApiCodeBlock>
+      </CodeBlock>
     </aside>
   </article>
 </template>

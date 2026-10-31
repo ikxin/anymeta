@@ -3,7 +3,6 @@ import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/githu
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'listGithubRepositoryContributors',
     tags: ['GitHub Repository'],
     summary: 'List repository contributors',
     description:

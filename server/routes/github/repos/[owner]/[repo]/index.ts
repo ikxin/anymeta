@@ -3,7 +3,6 @@ import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/githu
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'getGithubRepository',
     tags: ['GitHub Repository'],
     summary: 'Get a repository',
     description: 'Returns metadata for a public GitHub repository.',

@@ -164,7 +164,7 @@ function updateExpanded(event: Event) {
       </div>
 
       <div v-if="canExpand && expanded" class="ml-1.5 border-l border-default pl-4">
-        <ApiSchemaTree
+        <SchemaTree
           v-for="field in fields"
           :key="field.name"
           :document="document"
@@ -173,14 +173,14 @@ function updateExpanded(event: Event) {
           :required="field.required"
           :depth="depth + 1"
         />
-        <ApiSchemaTree
+        <SchemaTree
           v-if="resolved.items"
           :document="document"
           :schema="resolved.items"
           :name="t('ui.schema.arrayItem')"
           :depth="depth + 1"
         />
-        <ApiSchemaTree
+        <SchemaTree
           v-if="additionalSchema"
           :document="document"
           :schema="additionalSchema"
@@ -189,7 +189,7 @@ function updateExpanded(event: Event) {
         />
         <div v-for="group in combinations" :key="group.key" class="py-2">
           <p class="mb-1 text-xs font-medium text-muted">{{ group.label }}</p>
-          <ApiSchemaTree
+          <SchemaTree
             v-for="(branch, index) in group.schemas"
             :key="index"
             :document="document"

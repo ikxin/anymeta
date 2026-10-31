@@ -3,7 +3,6 @@ import { getNpmjsDownloadsPointPath, proxyNpmjsRequest } from '#server/utils/npm
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'getNpmjsDownloadsPoint',
     tags: ['npmjs Downloads'],
     summary: 'Get package download counts',
     description:

@@ -2,7 +2,6 @@
 export default defineNuxtConfig({
   modules: ['@nuxt/ui', '@nuxtjs/i18n'],
   devtools: { enabled: true },
-  css: ['~/assets/css/main.css'],
   app: {
     head: {
       bodyAttrs: {
@@ -10,6 +9,7 @@ export default defineNuxtConfig({
       },
     },
   },
+  css: ['~/assets/css/main.css'],
   runtimeConfig: {
     githubAppId: '',
     githubAppPrivateKey: '',
@@ -40,15 +40,16 @@ export default defineNuxtConfig({
     },
   },
   i18n: {
+    baseUrl: 'https://anymeta.top',
     defaultLocale: 'en',
     strategy: 'prefix_except_default',
     detectBrowserLanguage: false,
     locales: [
-      { code: 'en', language: 'en', name: 'English', file: 'en.json' },
-      { code: 'zh-CN', language: 'zh-CN', name: '简体中文', file: 'zh-CN.json' },
-      { code: 'zh-TW', language: 'zh-TW', name: '繁體中文', file: 'zh-TW.json' },
-      { code: 'ja', language: 'ja', name: '日本語', file: 'ja.json' },
+      { code: 'zh-cn', language: 'zh-CN', name: '简体中文', file: 'zh-cn.json' },
+      { code: 'zh-tw', language: 'zh-TW', name: '繁體中文', file: 'zh-tw.json' },
       { code: 'ko', language: 'ko', name: '한국어', file: 'ko.json' },
+      { code: 'en', language: 'en', name: 'English', file: 'en.json' },
+      { code: 'ja', language: 'ja', name: '日本語', file: 'ja.json' },
     ],
   },
 })

@@ -3,7 +3,6 @@ import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/githu
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'listGithubRepositoryLanguages',
     tags: ['GitHub Repository'],
     summary: 'List repository languages',
     description: 'Returns the number of bytes of code written in each language.',

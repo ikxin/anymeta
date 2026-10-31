@@ -1,14 +1,12 @@
 <script setup lang="ts">
+import { findOperationByRoute } from '~/utils/navigation'
+
 definePageMeta({ key: (route) => route.path })
 
 const route = useRoute()
 const { t } = useI18n()
-const { document, operations } = useApiReference()
-const operationId = typeof route.params.operation === 'string' ? route.params.operation : ''
-const operationIndex = computed(() =>
-  operations.value.findIndex((operation) => operation.id === operationId),
-)
-const operation = computed(() => operations.value[operationIndex.value])
+const { document, operations } = useReference()
+const operation = computed(() => findOperationByRoute(operations.value, route.params))
 
 if (!operation.value) {
   throw createError({ statusCode: 404, statusMessage: 'Endpoint not found', fatal: true })
@@ -21,7 +19,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <ApiOperation
+  <Operation
     v-if="operation && document"
     :key="operation.id"
     :operation="operation"

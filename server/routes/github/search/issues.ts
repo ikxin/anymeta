@@ -3,7 +3,6 @@ import { proxyGithubRequest } from '#server/utils/github-proxy'
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'searchGithubIssues',
     tags: ['GitHub Search'],
     summary: 'Search issues and pull requests',
     description: 'Find public issues and pull requests using GitHub search syntax.',

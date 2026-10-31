@@ -7,7 +7,6 @@ import { proxyOpenCollectiveGraphql } from '#server/utils/opencollective-proxy'
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'openCollectiveGraphql',
     tags: ['OpenCollective GraphQL'],
     summary: 'Query public OpenCollective sponsorship metadata',
     description:

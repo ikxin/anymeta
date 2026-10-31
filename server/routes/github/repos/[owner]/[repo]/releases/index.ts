@@ -3,28 +3,27 @@ import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/githu
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'listGithubRepositoryReleases',
-    tags: ['GitHub Repository'],
+    tags: ['GitHub Releases'],
     summary: 'List releases',
     description: 'Lists published releases for a public GitHub repository.',
     'x-i18n': {
       'zh-CN': {
-        tags: ['GitHub 仓库'],
+        tags: ['GitHub 发行版本'],
         summary: '列出发行版本',
         description: '列出公开 GitHub 仓库已发布的发行版本。',
       },
       'zh-TW': {
-        tags: ['GitHub 儲存庫'],
+        tags: ['GitHub 發行版本'],
         summary: '列出發行版本',
         description: '列出公開 GitHub 儲存庫已發布的發行版本。',
       },
       ja: {
-        tags: ['GitHub リポジトリ'],
+        tags: ['GitHub リリース'],
         summary: 'リリース一覧を取得',
         description: '公開 GitHub リポジトリの公開済みリリースを一覧表示します。',
       },
       ko: {
-        tags: ['GitHub 저장소'],
+        tags: ['GitHub 릴리스'],
         summary: '릴리스 목록 조회',
         description: '공개 GitHub 저장소의 게시된 릴리스를 나열합니다.',
       },

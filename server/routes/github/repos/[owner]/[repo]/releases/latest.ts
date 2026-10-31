@@ -3,29 +3,28 @@ import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/githu
 
 defineRouteMeta({
   openAPI: {
-    operationId: 'getGithubLatestRelease',
-    tags: ['GitHub Repository'],
+    tags: ['GitHub Releases'],
     summary: 'Get the latest release',
     description:
       'Returns the original latest published full release from GitHub, excluding drafts and prereleases.',
     'x-i18n': {
       'zh-CN': {
-        tags: ['GitHub 仓库'],
+        tags: ['GitHub 发行版本'],
         summary: '获取最新发行版本',
         description: '返回 GitHub 原始的最新正式发行版本，不包含草稿和预发布版本。',
       },
       'zh-TW': {
-        tags: ['GitHub 儲存庫'],
+        tags: ['GitHub 發行版本'],
         summary: '取得最新發行版本',
         description: '傳回 GitHub 原始的最新正式發行版本，不包含草稿和預先發行版本。',
       },
       ja: {
-        tags: ['GitHub リポジトリ'],
+        tags: ['GitHub リリース'],
         summary: '最新リリースを取得',
         description: '下書きとプレリリースを除く GitHub の最新正式リリースをそのまま返します。',
       },
       ko: {
-        tags: ['GitHub 저장소'],
+        tags: ['GitHub 릴리스'],
         summary: '최신 릴리스 조회',
         description: '초안과 사전 릴리스를 제외한 GitHub의 최신 정식 릴리스를 그대로 반환합니다.',
       },

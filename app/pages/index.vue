@@ -1,19 +1,10 @@
 <script setup lang="ts">
-import type { ApiOperation } from '~/utils/openapi'
-import { operationLink } from '~/utils/api-navigation'
+import { groupOperations, operationLink } from '~/utils/navigation'
 
-const { document, operations } = useApiReference()
+const { document, operations } = useReference()
 const { t } = useI18n()
 const localePath = useLocalePath()
-const groups = computed(() => {
-  const result = new Map<string, ApiOperation[]>()
-  for (const operation of operations.value) {
-    const group = result.get(operation.tag) || []
-    group.push(operation)
-    result.set(operation.tag, group)
-  }
-  return Array.from(result, ([tag, operations]) => ({ tag, operations }))
-})
+const groups = computed(() => groupOperations(operations.value))
 
 useSeoMeta({
   title: () => t('site.pageTitle'),
@@ -31,22 +22,25 @@ useSeoMeta({
     </header>
 
     <div class="min-w-0 space-y-6 xl:pt-11">
-      <section v-for="group in groups" :key="group.tag">
-        <h2 class="mb-2 text-[15px] font-semibold leading-6 text-highlighted">{{ group.tag }}</h2>
-        <div
-          class="divide-y divide-default overflow-hidden rounded-md border border-default bg-reference-panel"
-        >
-          <NuxtLink
-            v-for="operation in group.operations"
-            :key="operation.id"
-            :to="localePath(operationLink(operation))"
-            :aria-label="operation.summary"
-            :title="operation.summary"
-            class="flex min-w-0 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+      <section v-for="platform in groups" :key="platform.id" class="space-y-4">
+        <h2 class="text-lg font-semibold leading-7 text-highlighted">{{ platform.label }}</h2>
+        <div v-for="category in platform.categories" :key="category.id">
+          <h3 class="mb-2 text-[15px] font-medium leading-6 text-highlighted">{{ category.label }}</h3>
+          <div
+            class="divide-y divide-default overflow-hidden rounded-md border border-default bg-reference-panel"
           >
-            <ApiMethodBadge :method="operation.method" class="w-9" />
-            <code class="min-w-0 break-all text-xs leading-5">{{ operation.path }}</code>
-          </NuxtLink>
+            <NuxtLink
+              v-for="operation in category.operations"
+              :key="operation.id"
+              :to="localePath(operationLink(operation))"
+              :aria-label="operation.summary"
+              :title="operation.summary"
+              class="flex min-w-0 items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-primary"
+            >
+              <MethodBadge :method="operation.method" class="w-9" />
+              <code class="min-w-0 break-all text-xs leading-5">{{ operation.path }}</code>
+            </NuxtLink>
+          </div>
         </div>
       </section>
       <UAlert

@@ -3,7 +3,6 @@ import type { NuxtError } from '#app'
 
 const props = defineProps<{ error: NuxtError }>()
 const { t } = useI18n()
-const uiLocale = useUiLocale()
 const localePath = useLocalePath()
 const localeHead = useLocaleHead({ seo: false })
 const notFound = computed(() => props.error.statusCode === 404)
@@ -14,7 +13,7 @@ useSeoMeta({ title: () => `${title.value} · AnyMeta`, robots: 'noindex' })
 </script>
 
 <template>
-  <UApp :locale="uiLocale">
+  <UApp>
     <main class="flex min-h-screen items-center justify-center bg-default px-6 py-16">
       <div class="max-w-md text-center">
         <p class="mb-3 font-mono text-sm text-primary">{{ error.statusCode }}</p>

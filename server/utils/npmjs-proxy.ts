@@ -31,7 +31,10 @@ export async function proxyNpmjsRequest(event: H3Event, path: string) {
   const method = getMethod(event).toUpperCase()
   if (method !== 'GET' && method !== 'HEAD') {
     setResponseHeader(event, 'Allow', 'GET, HEAD, OPTIONS')
-    throw createError({ statusCode: 405, message: '此 npmjs 代理接口仅接受只读请求。' })
+    throw createError({
+      statusCode: 405,
+      message: 'This npmjs proxy endpoint accepts read-only requests only.',
+    })
   }
 
   const url = new URL(`/${path}`, NPMJS_API_ORIGIN)
@@ -59,7 +62,11 @@ export async function proxyNpmjsRequest(event: H3Event, path: string) {
         }),
     )
   } catch (error) {
-    throw createError({ statusCode: 502, message: '无法连接 npmjs 上游接口。', cause: error })
+    throw createError({
+      statusCode: 502,
+      message: 'Unable to connect to the npmjs upstream API.',
+      cause: error,
+    })
   }
 
   const responseHeaders = new Headers()
@@ -90,7 +97,7 @@ export function getNpmjsDownloadsPointPath(event: H3Event) {
     period === '.' ||
     period === '..'
   ) {
-    throw createError({ statusCode: 400, message: '下载统计周期无效。' })
+    throw createError({ statusCode: 400, message: 'The download statistics period is invalid.' })
   }
   const packages = readRouteParam(event, 'package').split(',')
   for (const name of packages) validatePackageName(name)
@@ -105,7 +112,7 @@ function readRouteParam(event: H3Event, name: string) {
   try {
     return decodeURIComponent(getRouterParam(event, name) || '')
   } catch {
-    throw createError({ statusCode: 400, message: '路径参数包含无效编码。' })
+    throw createError({ statusCode: 400, message: 'A route parameter contains invalid encoding.' })
   }
 }
 
@@ -117,6 +124,6 @@ function validatePackageName(name: string) {
     /[\\\u0000-\u001f\u007f]/.test(name) ||
     name.split('/').some((segment) => segment === '.' || segment === '..')
   ) {
-    throw createError({ statusCode: 400, message: 'npm 包名无效。' })
+    throw createError({ statusCode: 400, message: 'The npm package name is invalid.' })
   }
 }

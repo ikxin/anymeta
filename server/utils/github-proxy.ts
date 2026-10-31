@@ -133,7 +133,7 @@ export function getGithubRepositoryPath(event: H3Event, suffix?: string) {
 }
 
 export function getGithubOrganizationPath(event: H3Event, suffix?: string) {
-  const org = readPathSegment(event, 'org', '组织名称')
+  const org = readPathSegment(event, 'org', 'organization name')
   return `orgs/${org}${suffix ? `/${suffix}` : ''}`
 }
 
@@ -223,7 +223,7 @@ async function fetchWithTimeout(url: URL, init: RequestInit) {
 
       await response.body?.cancel()
       if (redirects >= MAX_UPSTREAM_REDIRECTS) {
-        throw new Error('GitHub 上游重定向次数超出限制。')
+        throw new Error('The GitHub upstream redirect limit was exceeded.')
       }
       upstreamUrl = target
       redirects += 1

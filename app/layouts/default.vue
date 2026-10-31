@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { OpenApiDocument } from '~/utils/openapi'
+import { findOperationByRoute } from '~/utils/navigation'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -12,9 +13,9 @@ const {
   error,
   refresh,
 } = await useFetch<OpenApiDocument>('/_openapi.json', { key: 'anymeta-openapi' })
-const { operations } = useApiReference()
+const { operations } = useReference()
 const selectedId = computed(() =>
-  typeof route.params.operation === 'string' ? route.params.operation : undefined,
+  findOperationByRoute(operations.value, route.params)?.id,
 )
 
 watch(
@@ -47,7 +48,7 @@ watch(
           >v{{ document.info.version }}</span
         >
       </div>
-      <ApiNavigation
+      <Navigation
         v-model="search"
         :operations="operations"
         :selected-id="selectedId"
@@ -67,7 +68,7 @@ watch(
           size="xs"
         />
         <div class="flex items-center gap-1">
-          <LanguageSwitcher />
+          <LocaleSelect />
           <UColorModeButton size="xs" />
         </div>
       </div>
@@ -92,7 +93,7 @@ watch(
             :aria-label="t('site.openNavigation')"
           />
           <template #body>
-            <ApiNavigation
+            <Navigation
               v-model="search"
               :operations="operations"
               :selected-id="selectedId"
@@ -119,7 +120,7 @@ watch(
           variant="ghost"
           size="xs"
         />
-        <LanguageSwitcher />
+        <LocaleSelect />
         <UColorModeButton size="xs" />
       </div>
     </header>
