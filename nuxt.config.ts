@@ -22,8 +22,25 @@ export default defineNuxtConfig({
     '/pypi/**': { cors: true },
     '/opencollective/**': { cors: true },
   },
-  compatibilityDate: '2025-07-15',
+  compatibilityDate: '2026-10-31',
   nitro: {
+    preset: 'cloudflare_module',
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+    },
+    storage: {
+      cache: {
+        driver: 'cloudflare-kv-binding',
+        binding: 'CACHE',
+      },
+    },
+    devStorage: {
+      cache: {
+        driver: 'cloudflare-kv-binding',
+        binding: 'CACHE',
+      },
+    },
     experimental: {
       openAPI: true,
     },
