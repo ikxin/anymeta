@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -7,6 +7,12 @@ defineRouteMeta({
     summary: 'List repository contributors',
     description:
       'Lists contributors to a public GitHub repository, sorted by contribution count in descending order.',
+    'x-docs': {
+      platform: 'github',
+      category: 'repos',
+      endpoint: 'contributors',
+      order: 40,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 仓库'],

@@ -3,6 +3,8 @@ import type { ApiOperation, ApiOperationRoute } from '~/utils/openapi'
 const platformLabels: Record<string, string> = {
   github: 'GitHub',
   npmjs: 'npmjs',
+  crates: 'crates.io',
+  pypi: 'PyPI',
   opencollective: 'OpenCollective',
 }
 

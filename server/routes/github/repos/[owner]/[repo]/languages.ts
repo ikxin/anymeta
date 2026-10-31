@@ -1,11 +1,17 @@
 import { defineEventHandler } from 'h3'
-import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
     tags: ['GitHub Repository'],
     summary: 'List repository languages',
     description: 'Returns the number of bytes of code written in each language.',
+    'x-docs': {
+      platform: 'github',
+      category: 'repos',
+      endpoint: 'languages',
+      order: 60,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 仓库'],

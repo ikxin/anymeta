@@ -18,6 +18,8 @@ export default defineNuxtConfig({
   routeRules: {
     '/github/**': { cors: true },
     '/npmjs/**': { cors: true },
+    '/crates/**': { cors: true },
+    '/pypi/**': { cors: true },
     '/opencollective/**': { cors: true },
   },
   compatibilityDate: '2025-07-15',

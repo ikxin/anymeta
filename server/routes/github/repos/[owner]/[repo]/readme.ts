@@ -1,5 +1,5 @@
 import { defineEventHandler, getRequestHeader } from 'h3'
-import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -7,6 +7,12 @@ defineRouteMeta({
     summary: 'Get a repository README',
     description:
       'Returns the original GitHub README response. JSON content remains Base64-encoded; raw and HTML media types are also supported.',
+    'x-docs': {
+      platform: 'github',
+      category: 'repos',
+      endpoint: 'readme',
+      order: 70,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 仓库'],

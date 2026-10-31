@@ -94,6 +94,7 @@ interface ApiOperationDefinition extends ApiLocalizedMetadata {
   tags?: string[]
   summary?: string
   description?: string
+  'x-docs'?: ApiDocsMetadata
   parameters?: (ApiParameter | ApiReference)[]
   requestBody?: ApiRequestBody | ApiReference
   responses?: Record<string, ApiResponse | ApiReference>
@@ -139,7 +140,11 @@ export interface ApiOperationRoute {
   endpoint: string
 }
 
-export interface ApiOperation extends ApiOperationRoute {
+interface ApiDocsMetadata extends ApiOperationRoute {
+  order: number
+}
+
+export interface ApiOperation extends ApiDocsMetadata {
   id: string
   method: Uppercase<HttpMethod>
   path: string
@@ -251,26 +256,6 @@ function resolveParameter(document: OpenApiDocument, value: unknown): ApiParamet
   }
 }
 
-function operationRoute(path: string, method: HttpMethod): ApiOperationRoute {
-  let [platform = 'other', category = 'general', ...endpoints] = path
-    .split('/')
-    .filter((segment) => segment && !segment.includes('{'))
-
-  if (platform === 'github' && category === 'repos' && endpoints[0] === 'releases') {
-    category = 'releases'
-    endpoints = endpoints.slice(1)
-  }
-
-  let endpoint = endpoints.join('-')
-  if (!endpoint) {
-    if (category === 'graphql' && method === 'post') endpoint = 'query'
-    else if (category === 'releases' && method === 'get') endpoint = 'list'
-    else endpoint = method
-  }
-
-  return { platform, category, endpoint }
-}
-
 export function getOperations(document: OpenApiDocument): ApiOperation[] {
   const operations: ApiOperation[] = []
   for (const [path, value] of Object.entries(document.paths ?? {})) {
@@ -282,6 +267,8 @@ export function getOperations(document: OpenApiDocument): ApiOperation[] {
       if (!isRecord(definition)) continue
       const operation = definition as ApiOperationDefinition
       if (!operation.operationId && !operation.summary) continue
+      const docs = operation['x-docs']
+      if (!docs?.platform || !docs.category || !docs.endpoint) continue
       const parameters = new Map<string, ApiParameter>()
       const inherited = Array.isArray(pathItem.parameters) ? pathItem.parameters : []
       const own = Array.isArray(operation.parameters) ? operation.parameters : []
@@ -317,7 +304,8 @@ export function getOperations(document: OpenApiDocument): ApiOperation[] {
         body && isRecord(body.content) ? (body as unknown as ApiRequestBody) : undefined
       operations.push({
         id: operation.operationId || `${method}:${path}`,
-        ...operationRoute(path, method),
+        ...docs,
+        order: Number.isFinite(docs.order) ? docs.order : Number.MAX_SAFE_INTEGER,
         method: method.toUpperCase() as Uppercase<HttpMethod>,
         path,
         tag: operation.tags?.[0] || path.split('/').filter(Boolean)[0] || 'Other endpoints',
@@ -330,7 +318,7 @@ export function getOperations(document: OpenApiDocument): ApiOperation[] {
       })
     }
   }
-  return operations
+  return operations.sort((a, b) => a.order - b.order)
 }
 
 function exampleForSchema(

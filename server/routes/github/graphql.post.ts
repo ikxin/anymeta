@@ -1,9 +1,6 @@
 import { createError, defineEventHandler, readRawBody } from 'h3'
-import {
-  GithubGraphqlValidationError,
-  validateGithubGraphqlBody,
-} from '#server/utils/github-graphql'
-import { proxyGithubRequest } from '#server/utils/github-proxy'
+import { GraphqlValidationError } from '#server/utils/graphql'
+import { proxyGithubRequest, validateGithubGraphqlBody } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -11,6 +8,12 @@ defineRouteMeta({
     summary: 'Run a GitHub GraphQL query',
     description:
       'Runs a read-only GraphQL query with a shared GitHub App installation access token.',
+    'x-docs': {
+      platform: 'github',
+      category: 'graphql',
+      endpoint: 'query',
+      order: 10,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub GraphQL'],
@@ -299,7 +302,7 @@ export default defineEventHandler(async (event) => {
   try {
     body = validateGithubGraphqlBody(await readRawBody(event, 'utf8'))
   } catch (error) {
-    if (error instanceof GithubGraphqlValidationError) {
+    if (error instanceof GraphqlValidationError) {
       throw createError({ statusCode: 400, message: error.message })
     }
     throw error

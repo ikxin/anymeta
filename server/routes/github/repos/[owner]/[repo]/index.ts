@@ -1,11 +1,17 @@
 import { defineEventHandler } from 'h3'
-import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
     tags: ['GitHub Repository'],
     summary: 'Get a repository',
     description: 'Returns metadata for a public GitHub repository.',
+    'x-docs': {
+      platform: 'github',
+      category: 'repos',
+      endpoint: 'get',
+      order: 50,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 仓库'],

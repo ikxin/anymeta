@@ -1,11 +1,17 @@
 import { defineEventHandler } from 'h3'
-import { proxyGithubRequest } from '#server/utils/github-proxy'
+import { proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
     tags: ['GitHub Search'],
     summary: 'Search issues and pull requests',
     description: 'Find public issues and pull requests using GitHub search syntax.',
+    'x-docs': {
+      platform: 'github',
+      category: 'search',
+      endpoint: 'issues',
+      order: 100,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 搜索'],

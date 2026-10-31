@@ -1,11 +1,17 @@
 import { defineEventHandler } from 'h3'
-import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
     tags: ['GitHub Releases'],
     summary: 'List releases',
     description: 'Lists published releases for a public GitHub repository.',
+    'x-docs': {
+      platform: 'github',
+      category: 'releases',
+      endpoint: 'list',
+      order: 80,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 发行版本'],

@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { getNpmjsDownloadsPointPath, proxyNpmjsRequest } from '#server/utils/npmjs-proxy'
+import { getNpmjsDownloadsPath, proxyNpmjsRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -7,12 +7,18 @@ defineRouteMeta({
     summary: 'Get package download counts',
     description:
       'Returns the original npm download counts for a period. Supports single scoped packages and comma-separated unscoped package names.',
+    'x-docs': {
+      platform: 'npmjs',
+      category: 'downloads',
+      endpoint: 'point',
+      order: 140,
+    },
     'x-i18n': {
       'zh-CN': {
-        tags: ['npmjs 下载统计'],
-        summary: '获取包下载量',
+        tags: ['npmjs 下载量'],
+        summary: '获取依赖包下载量',
         description:
-          '返回指定周期的 npm 原始下载统计，支持单个作用域包，以及用逗号分隔的多个普通包名。',
+          '返回指定周期的 npm 原始下载统计，支持单个作用域依赖包，以及用逗号分隔的多个普通依赖包名称。',
       },
       'zh-TW': {
         tags: ['npmjs 下載統計'],
@@ -36,58 +42,8 @@ defineRouteMeta({
     externalDocs: { url: 'https://github.com/npm/registry/blob/main/docs/download-counts.md' },
     security: [],
     parameters: [
-      {
-        name: 'period',
-        in: 'path',
-        required: true,
-        description:
-          'last-day, last-week, last-month, last-year, YYYY-MM-DD, or YYYY-MM-DD:YYYY-MM-DD.',
-        'x-i18n': {
-          'zh-CN': {
-            description:
-              '支持 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。',
-          },
-          'zh-TW': {
-            description:
-              '支援 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。',
-          },
-          ja: {
-            description:
-              'last-day、last-week、last-month、last-year、YYYY-MM-DD または YYYY-MM-DD:YYYY-MM-DD を指定します。',
-          },
-          ko: {
-            description:
-              'last-day, last-week, last-month, last-year, YYYY-MM-DD 또는 YYYY-MM-DD:YYYY-MM-DD를 지원합니다.',
-          },
-        },
-        schema: { type: 'string' },
-        example: 'last-month',
-      },
-      {
-        name: 'package',
-        in: 'path',
-        required: true,
-        description:
-          'A package name, such as nuxt or @nuxt/kit, or comma-separated unscoped names such as nuxt,vue.',
-        'x-i18n': {
-          'zh-CN': {
-            description: '包名，例如 nuxt、@nuxt/kit，或用逗号分隔的普通包名，例如 nuxt,vue。',
-          },
-          'zh-TW': {
-            description:
-              '套件名稱，例如 nuxt、@nuxt/kit，或用逗號分隔的一般套件名稱，例如 nuxt,vue。',
-          },
-          ja: {
-            description:
-              'nuxt、@nuxt/kit などの名前、または nuxt,vue のようなカンマ区切りの通常の名前。',
-          },
-          ko: {
-            description: 'nuxt, @nuxt/kit 등의 이름 또는 nuxt,vue처럼 쉼표로 구분한 일반 이름.',
-          },
-        },
-        schema: { type: 'string' },
-        example: 'nuxt',
-      },
+      { $ref: '#/components/parameters/NpmjsDownloadPeriod' },
+      { $ref: '#/components/parameters/NpmjsDownloadPackages' },
       { $ref: '#/components/parameters/IfNoneMatch' },
       { $ref: '#/components/parameters/IfModifiedSince' },
     ],
@@ -95,7 +51,7 @@ defineRouteMeta({
       200: {
         description: 'The original download count object or bulk result keyed by package name.',
         'x-i18n': {
-          'zh-CN': { description: '原始下载统计对象，或以包名为键的批量统计结果。' },
+          'zh-CN': { description: '原始下载统计对象，或以依赖包名称为键的批量统计结果。' },
           'zh-TW': { description: '原始下載統計物件，或以套件名稱為索引鍵的批次統計結果。' },
           ja: { description: '元のダウンロード統計オブジェクト、または名前をキーにした一括結果。' },
           ko: { description: '원본 다운로드 통계 객체 또는 패키지 이름을 키로 하는 일괄 결과.' },
@@ -121,6 +77,62 @@ defineRouteMeta({
     },
     $global: {
       components: {
+        parameters: {
+          NpmjsDownloadPeriod: {
+            name: 'period',
+            in: 'path',
+            required: true,
+            description:
+              'last-day, last-week, last-month, last-year, YYYY-MM-DD, or YYYY-MM-DD:YYYY-MM-DD. Date ranges are inclusive; up to 18 months, or 365 days for bulk queries.',
+            'x-i18n': {
+              'zh-CN': {
+                description:
+                  '支持 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。包含起止日期，最多 18 个月，批量查询最多 365 天。',
+              },
+              'zh-TW': {
+                description:
+                  '支援 last-day、last-week、last-month、last-year、YYYY-MM-DD 或 YYYY-MM-DD:YYYY-MM-DD。包含起訖日期，最多 18 個月，批次查詢最多 365 天。',
+              },
+              ja: {
+                description:
+                  'last-day、last-week、last-month、last-year、YYYY-MM-DD または YYYY-MM-DD:YYYY-MM-DD。開始日と終了日を含み、最大 18 か月、一括取得は最大 365 日。',
+              },
+              ko: {
+                description:
+                  'last-day, last-week, last-month, last-year, YYYY-MM-DD 또는 YYYY-MM-DD:YYYY-MM-DD. 시작일과 종료일을 포함하며 최대 18개월, 일괄 조회는 최대 365일입니다.',
+              },
+            },
+            schema: { type: 'string' },
+            example: 'last-month',
+          },
+          NpmjsDownloadPackages: {
+            name: 'package',
+            in: 'path',
+            required: true,
+            description:
+              'A package name such as nuxt or @nuxt/kit, or up to 128 comma-separated unscoped names such as nuxt,vue. Scoped packages cannot be queried in bulk.',
+            'x-i18n': {
+              'zh-CN': {
+                description:
+                  '依赖包名称，例如 nuxt、@nuxt/kit，或最多 128 个用逗号分隔的普通依赖包名称，例如 nuxt,vue。作用域依赖包不支持批量查询。',
+              },
+              'zh-TW': {
+                description:
+                  '套件名稱，例如 nuxt、@nuxt/kit，或最多 128 個以逗號分隔的一般套件名稱，例如 nuxt,vue。範圍套件不支援批次查詢。',
+              },
+              ja: {
+                description:
+                  'nuxt、@nuxt/kit などの名前、または nuxt,vue のような最大 128 個のカンマ区切りの通常の名前。スコープ付きパッケージの一括取得には対応していません。',
+              },
+              ko: {
+                description:
+                  'nuxt, @nuxt/kit 등의 이름 또는 nuxt,vue처럼 쉼표로 구분한 최대 128개의 일반 이름. 범위 패키지의 일괄 조회는 지원하지 않습니다.',
+              },
+            },
+            schema: { type: 'string' },
+            example: 'nuxt',
+          },
+        },
         responses: {
           NpmjsNotModified: {
             description: 'Not modified.',
@@ -158,7 +170,7 @@ defineRouteMeta({
           NpmjsDownloadCount: {
             type: 'object',
             additionalProperties: true,
-            required: ['downloads', 'start', 'end', 'package'],
+            required: ['downloads', 'start', 'end'],
             properties: {
               downloads: { type: 'integer', minimum: 0 },
               start: { type: 'string', format: 'date' },
@@ -173,5 +185,5 @@ defineRouteMeta({
 })
 
 export default defineEventHandler((event) => {
-  return proxyNpmjsRequest(event, getNpmjsDownloadsPointPath(event))
+  return proxyNpmjsRequest(event, getNpmjsDownloadsPath(event, 'point'))
 })

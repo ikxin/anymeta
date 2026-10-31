@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubRepositoryPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -7,6 +7,12 @@ defineRouteMeta({
     summary: 'Get the latest release',
     description:
       'Returns the original latest published full release from GitHub, excluding drafts and prereleases.',
+    'x-docs': {
+      platform: 'github',
+      category: 'releases',
+      endpoint: 'latest',
+      order: 90,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 发行版本'],

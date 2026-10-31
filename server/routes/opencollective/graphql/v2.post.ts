@@ -1,9 +1,9 @@
 import { createError, defineEventHandler, readRawBody } from 'h3'
+import { GraphqlValidationError } from '#server/utils/graphql'
 import {
-  OpenCollectiveGraphqlValidationError,
+  proxyOpenCollectiveGraphql,
   validateOpenCollectiveGraphqlBody,
-} from '#server/utils/opencollective-graphql'
-import { proxyOpenCollectiveGraphql } from '#server/utils/opencollective-proxy'
+} from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -11,6 +11,12 @@ defineRouteMeta({
     summary: 'Query public OpenCollective sponsorship metadata',
     description:
       'Queries public Collective, member, tier, and amount metadata with a server-side Personal Token. Only allowlisted query fields are available; mutations, identity data, and payment data are rejected. When no Personal Token is configured, the OpenCollective anonymous allowance is used.',
+    'x-docs': {
+      platform: 'opencollective',
+      category: 'graphql',
+      endpoint: 'v2',
+      order: 200,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['OpenCollective GraphQL'],
@@ -202,7 +208,7 @@ export default defineEventHandler(async (event) => {
   try {
     body = validateOpenCollectiveGraphqlBody(await readRawBody(event, 'utf8'))
   } catch (error) {
-    if (error instanceof OpenCollectiveGraphqlValidationError) {
+    if (error instanceof GraphqlValidationError) {
       throw createError({ statusCode: 400, message: error.message })
     }
     throw error

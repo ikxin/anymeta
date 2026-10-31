@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { getGithubOrganizationPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubOrganizationPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -7,6 +7,12 @@ defineRouteMeta({
     summary: 'Get an organization',
     description:
       'Returns the original public organization metadata from GitHub, including its follower count.',
+    'x-docs': {
+      platform: 'github',
+      category: 'orgs',
+      endpoint: 'get',
+      order: 20,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 组织'],

@@ -1,5 +1,5 @@
 import { defineEventHandler } from 'h3'
-import { getGithubOrganizationPath, proxyGithubRequest } from '#server/utils/github-proxy'
+import { getGithubOrganizationPath, proxyGithubRequest } from '#server/utils/proxy'
 
 defineRouteMeta({
   openAPI: {
@@ -7,6 +7,12 @@ defineRouteMeta({
     summary: 'List organization repositories',
     description:
       'Returns the original paginated repository array from GitHub. No star totals or other aggregates are added.',
+    'x-docs': {
+      platform: 'github',
+      category: 'orgs',
+      endpoint: 'repos',
+      order: 30,
+    },
     'x-i18n': {
       'zh-CN': {
         tags: ['GitHub 组织'],

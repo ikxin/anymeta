@@ -9,13 +9,15 @@ const graphqlMethodNotAllowed = defineEventHandler((event) => {
 })
 
 export default defineNitroPlugin((nitroApp) => {
-  nitroApp.router.use('/opencollective/graphql/v2', graphqlMethodNotAllowed, [
-    'connect',
-    'delete',
-    'get',
-    'head',
-    'patch',
-    'put',
-    'trace',
-  ])
+  for (const path of ['/github/graphql', '/opencollective/graphql/v2']) {
+    nitroApp.router.use(path, graphqlMethodNotAllowed, [
+      'connect',
+      'delete',
+      'get',
+      'head',
+      'patch',
+      'put',
+      'trace',
+    ])
+  }
 })
