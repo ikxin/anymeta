@@ -42,7 +42,13 @@ async function changeLocale(value: string) {
     color="neutral"
     variant="ghost"
     size="sm"
-    class="w-28"
+    class="w-10 sm:w-28"
+    :ui="{
+      value: 'hidden sm:block',
+      trailing: 'hidden sm:flex',
+      base: 'rounded-lg pr-2 sm:pr-8',
+      content: 'min-w-40',
+    }"
     :aria-label="t('site.chooseLanguage')"
     :title="t('site.chooseLanguage')"
     :loading="switching"

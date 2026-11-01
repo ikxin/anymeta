@@ -3,17 +3,18 @@ const props = withDefaults(
   defineProps<{
     code: string
     label?: string
-    maxHeight?: string
+    maxHeightClass?: string
   }>(),
   {
     label: 'JSON',
-    maxHeight: '28rem',
+    maxHeightClass: 'max-h-112',
   },
 )
 
 const { t } = useI18n()
 const toast = useToast()
 const copied = ref(false)
+const lineCount = computed(() => (props.code || t('ui.code.empty')).split('\n').length)
 let copyTimer: ReturnType<typeof setTimeout> | undefined
 
 const tokenClasses = {
@@ -70,9 +71,9 @@ onBeforeUnmount(() => clearTimeout(copyTimer))
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-md border border-default bg-reference-panel">
-    <div class="flex min-h-9 items-center justify-between gap-3 border-b border-default px-3 py-1">
-      <div class="min-w-0 flex-1 text-xs text-muted">
+  <div class="overflow-hidden rounded-xl border border-default bg-reference-panel">
+    <div class="flex min-h-10 items-center justify-between gap-3 border-b border-default bg-default/60 px-3 py-1">
+      <div class="min-w-0 flex-1 font-mono text-[10px] text-muted">
         <slot name="label">{{ label }}</slot>
       </div>
       <slot name="actions" />
@@ -88,14 +89,20 @@ onBeforeUnmount(() => clearTimeout(copyTimer))
       />
     </div>
     <slot>
-      <pre
-        :style="{ '--code-max-height': maxHeight }"
-        class="max-h-(--code-max-height) overflow-auto px-3 py-3 font-mono text-xs leading-[1.7]"
+      <div
+        class="flex overflow-auto font-mono text-[11px] leading-6"
+        :class="maxHeightClass"
         tabindex="0"
+        role="region"
         :aria-label="label"
-      ><code><span v-for="(token, index) in tokens" :key="index" :class="token.kind ? tokenClasses[token.kind] : undefined">{{ token.text }}</span></code></pre>
+      >
+        <div class="sticky left-0 shrink-0 border-r border-default bg-reference-panel px-3 py-3 text-right text-muted/50 select-none" aria-hidden="true">
+          <span v-for="line in lineCount" :key="line" class="block">{{ line }}</span>
+        </div>
+        <pre class="min-w-max flex-1 px-4 py-3"><code><span v-for="(token, index) in tokens" :key="index" :class="token.kind ? tokenClasses[token.kind] : undefined">{{ token.text }}</span></code></pre>
+      </div>
     </slot>
-    <div v-if="$slots.footer" class="border-t border-default px-3 py-2 text-xs text-muted">
+    <div v-if="$slots.footer" class="border-t border-default px-4 py-3 text-[11px] leading-5 text-muted">
       <slot name="footer" />
     </div>
   </div>

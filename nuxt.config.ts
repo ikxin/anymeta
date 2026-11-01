@@ -4,8 +4,19 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   app: {
     head: {
+      htmlAttrs: {
+        class: [
+          'scroll-smooth motion-reduce:scroll-auto',
+          '[scrollbar-width:thin] **:[scrollbar-width:thin]',
+          '[scrollbar-color:color-mix(in_srgb,var(--ui-text-muted)_25%,transparent)_transparent]',
+          'motion-reduce:**:animate-none! motion-reduce:**:transition-none!',
+          'motion-reduce:[&_*::before]:animate-none! motion-reduce:[&_*::after]:animate-none!',
+          'motion-reduce:[&_*::before]:transition-none! motion-reduce:[&_*::after]:transition-none!',
+        ].join(' '),
+      },
       bodyAttrs: {
-        class: 'min-w-80 text-sm leading-normal antialiased selection:bg-primary/20',
+        class:
+          'min-w-80 bg-muted text-sm leading-normal antialiased selection:bg-primary/20 [&_button:not(:disabled)]:cursor-pointer [&_summary]:cursor-pointer',
       },
     },
   },

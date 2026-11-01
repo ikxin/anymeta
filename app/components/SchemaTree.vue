@@ -94,7 +94,7 @@ function updateExpanded(event: Event) {
 </script>
 
 <template>
-  <div class="min-w-0 border-b border-default text-sm last:border-b-0">
+  <div class="min-w-0 border-b border-default text-xs last:border-b-0">
     <component
       :is="canExpand ? 'details' : 'div'"
       :open="canExpand ? expanded : undefined"
@@ -121,8 +121,8 @@ function updateExpanded(event: Event) {
         <span class="min-w-0 break-all font-mono text-xs font-semibold text-highlighted">{{
           name ?? t('ui.schema.title')
         }}</span>
-        <span class="font-mono text-[11px] text-muted">{{ schemaType(resolved) }}</span>
-        <span v-if="required" class="text-[11px] text-amber-700 dark:text-amber-500">{{
+        <span class="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted">{{ schemaType(resolved) }}</span>
+        <span v-if="required" class="text-[10px] text-primary">{{
           t('ui.common.required')
         }}</span>
         <span v-if="nullable" class="text-[11px] text-muted">{{ t('ui.schema.nullable') }}</span>
