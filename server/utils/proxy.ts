@@ -141,8 +141,15 @@ export function getGithubRepositoryItemPath(
   return getGithubRepositoryPath(event, `${resource}/${number}${suffix ? `/${suffix}` : ''}`)
 }
 
-export function getGithubRepositoryRefPath(event: H3Event, resource: 'commits' | 'releases/tags') {
-  const name = resource === 'commits' ? 'ref' : 'tag'
+export function getGithubRepositoryRefPath(
+  event: H3Event,
+  resource: 'commits' | 'releases/tags' | 'git/trees',
+) {
+  const name = {
+    commits: 'ref',
+    'releases/tags': 'tag',
+    'git/trees': 'tree_sha',
+  }[resource]
   const ref = readGithubPathSegment(event, name, name, true)
   return getGithubRepositoryPath(event, `${resource}/${ref}`)
 }
